@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Намазға уақыт болды</title>
+<style>
+  :root{
+    /* Background */
+    --bg-0: #0A1120;
+    --bg-1: #101B30;
+    --bg-2: #16233B;
+    --bg-3: #1C2B45;
+
+ /* Panels */
+    --panel: rgba(255,255,255,0.035);
+    --panel-hover: rgba(255,255,255,0.055);
+    --panel-active: rgba(201,164,76,0.08);
+    --panel-border: rgba(255,255,255,0.09);
+    --panel-border-hover: rgba(201,164,76,0.35);
+
+/* Text */
+    --ink: #F1EADD;
+    --ink-bright: #FFFFFF;
+    --muted: #7C8699;
+    --muted-2: #4E5768;
+
+/* Status */
+    --success: #55C98A;
+    --success-soft: rgba(85,201,138,0.12);
+
+    --danger: #E06B6B;
+    --danger-soft: rgba(224,107,107,0.12);
+
+    --warning: #D9A441;
+    --warning-soft: rgba(217,164,65,0.12);
+
+    --info: #6495ED;
+    --info-soft: rgba(100,149,237,0.12);
+
+    --gold: #C9A44C;
+    --gold-soft: rgba(201,164,76,0.12);
+
+ /* Borders */
+    --border: rgba(255,255,255,0.08);
+    --border-light: rgba(255,255,255,0.13);
+    --border-gold: rgba(201,164,76,0.45);
+
+/* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.18);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.28);
+    --shadow-lg: 0 16px 50px rgba(0,0,0,0.40);
+
+ /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-full: 999px;
+
+    /* Spacing */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+
+    /* Typography */
+    --font-xs: 12px;
+    --font-sm: 14px;
+    --font-md: 16px;
+    --font-lg: 20px;
+    --font-xl: 28px;
+    --font-2xl: 36px;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+
+    /* Effects */
+    --transition-fast: 0.15s ease;
+    --transition: 0.25s ease;
+    --transition-slow: 0.4s ease;
+
+    /* Layout */
+    --container-width: 1200px;
+    --header-height: 72px;
+    --sidebar-width: 260px;
+
+    /* Overlay */
+    --overlay: rgba(0,0,0,0.55);
+    --blur: blur(12px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(160deg,var(--bg-0) 0%,var(--bg-1) 55%,var(--bg-0) 100%);
+    font-family:"Segoe UI",-apple-system,"Helvetica Neue",Arial,sans-serif;
+    color:var(--ink);
+    padding:28px 16px;
+  }
+button {
+    transition: all var(--transition);
+}
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:var(--radius-lg);
+    padding:28px 26px 20px;
+    backdrop-filter:blur(6px);
+    animation:fadeIn .5s ease-out;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .arch{display:block;margin:0 auto 14px;opacity:.85;}
+
+  .loc-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:2px;
+  }
+  .city{font-size:14px;color:var(--muted);}
+  .date{font-size:12px;color:var(--muted-2);}
+
+  
+.hero{
+  text-align:center;
+  margin:16px 0 20px;
+}
+
+.next-sub{
+  font-size:30px;
+  font-weight:500;
+  letter-spacing:-.5px;
+  color:var(--ink-bright);
+  margin-bottom:7px;
+  line-height:1.15;
+}
+
+.next-label{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+
+  margin-top:0;
+  padding:6px 11px;
+
+  font-size:13px;
+  color:var(--gold);
+
+  background:rgba(201,164,76,.08);
+  border:1px solid rgba(201,164,76,.18);
+  border-radius:var(--radius-full);
+
+  transition:all .25s ease;
+}
+
+.next-label::before{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 8px rgba(201,164,76,.7);
+  animation:pulse 1.8s infinite;
+}
+
+@keyframes pulse{
+  0%,100%{
+    opacity:.45;
+    transform:scale(.8);
+  }
+  50%{
+    opacity:1;
+    transform:scale(1.15);
+  }
+}
+
+.clock{
+  margin-top:9px;
+  font-family:Georgia,"Constantia","Times New Roman",serif;
+  font-size:27px;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-1px;
+  line-height:1;
+  color:var(--muted);
+}
+
+
+
+  .divider{height:1px;background:var(--panel-border);margin:6px 0 14px;}
+
+  .list{position:relative;padding-left:20px;}
+  .list::before{
+    content:"";
+    position:absolute;
+    left:5px;top:8px;bottom:8px;
+    width:1px;
+    background:linear-gradient(to bottom, var(--muted-2), transparent);
+  }
+  .row{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 4px 9px 14px;
+    border-radius:10px;
+  }
+  .row .dot{
+    position:absolute;left:-19px;top:50%;
+    transform:translateY(-50%);
+    width:9px;height:9px;border-radius:50%;
+    background:var(--muted-2);
+    border:2px solid var(--bg-1);
+  }
+  .row.info .dot{background:transparent;border:1.5px solid var(--muted-2);}
+  .row.past .name, .row.past .time{color:var(--muted);}
+  .row.next{background:var(--gold-soft);}
+  .row.next .dot{
+    background:var(--gold);
+    box-shadow:0 0 0 4px rgba(201,164,76,0.18);
+  }
+  .row.next{
+  background:
+    linear-gradient(
+      90deg,
+      rgba(201,164,76,.14),
+      rgba(201,164,76,.055)
+    );
+
+  border:1px solid rgba(201,164,76,.20);
+
+  box-shadow:
+    inset 3px 0 0 var(--gold),
+    0 4px 14px rgba(0,0,0,.08);
+
+  transform:translateX(2px);
+}
+
+.row.next .dot{
+  background:var(--gold);
+
+  box-shadow:
+    0 0 0 4px rgba(201,164,76,.16),
+    0 0 12px rgba(201,164,76,.25);
+}
+
+.row.next .name{
+  color:var(--gold);
+  font-weight:600;
+}
+
+.row.next .time{
+  color:#fff;
+  font-weight:600;
+}
+.row{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 4px 9px 14px;
+  border-radius:10px;
+
+  transition:
+    background .25s ease,
+    transform .25s ease,
+    border .25s ease;
+}
+  .name{font-size:15px;}
+  .row.info .name{color:var(--muted);font-size:13px;}
+  .time{
+    font-family:Georgia,"Constantia",serif;
+    font-size:17px;
+    font-variant-numeric:tabular-nums;
+  }
+  .row.info .time{font-size:14px;color:var(--muted);}
+
+  .note{font-size:11px;color:var(--muted-2);text-align:center;margin-top:16px;line-height:1.5;}
+
+  .settings-toggle{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    margin-top:14px;padding:8px;
+    font-size:12px;color:var(--muted);
+    cursor:pointer;user-select:none;
+    border-top:1px solid var(--panel-border);
+  }
+  .settings-toggle:hover{color:var(--ink);}
+  .settings{
+    display:none;
+    margin-top:12px;
+    padding-top:4px;
+  }
+  .settings.open{display:block;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  select{
+    width:100%;
+    background:#0D1526;
+    color:var(--ink);
+    border:1px solid var(--panel-border);
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:13px;
+    font-family:inherit;
+  }
+
+.sky-icon{
+  position:relative;
+  width:90px;
+  height:48px;
+  margin:0 auto 10px;
+  overflow:hidden;
+}
+
+.sky-icon::before{
+  content:"";
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:-35px;
+  height:70px;
+  border:1px solid rgba(201,164,76,.65);
+  border-radius:50% 50% 0 0;
+}
+
+.sun-or-moon{
+  position:absolute;
+  left:50%;
+  top:8px;
+  transform:translateX(-50%);
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#C9A44C;
+  box-shadow:
+    0 0 12px rgba(201,164,76,.35),
+    0 0 28px rgba(201,164,76,.12);
+}
+
+.star{
+  position:absolute;
+  color:#C9A44C;
+  opacity:.7;
+  font-size:11px;
+}
+
+.star-1{
+  left:16px;
+  top:8px;
+}
+
+.star-2{
+  right:18px;
+  top:17px;
+  font-size:18px;
+}
+
+.star-3{
+  right:30px;
+  top:2px;
+  font-size:7px;
+}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="sky-icon" id="skyIcon">
+  <div class="sun-or-moon"></div>
+  <div class="star star-1">✦</div>
+  <div class="star star-2">·</div>
+  <div class="star star-3">✦</div>
+</div>
+
+    <div class="loc-row">
+      <span class="city" id="cityLabel">Алматы қаласы</span>
+      <span class="date" id="dateLabel">—</span>
+    </div>
+
+    <div class="hero">
+     <div class="next-sub" id="nextSub"></div>
+     <div class="next-label" id="nextLabel">Есептелуде…</div>
+     <div class="clock" id="clock">--:--:--</div>
+</div>
+
+    <div class="divider"></div>
+
+    <div class="list" id="list"></div>
+
+    <div class="note">ҚМДБ ресми кестесімен калибрленген (Алматы/Астана деректерімен тексерілді).<br>Дәлдігі шамамен ±1-2 минут.</div>
+
+    <div class="settings-toggle" id="settingsToggle">⚙ Қала мен әдісті өзгерту</div>
+    <div class="settings" id="settingsPanel">
+      <div class="field">
+        <label for="citySelect">Қала</label>
+        <select id="citySelect"></select>
+      </div>
+      <div class="field">
+        <label for="methodSelect">Есептеу әдісі</label>
+        <select id="methodSelect"></select>
+      </div>
+      <div class="field">
+        <label for="madhabSelect">Екінті уақыты (мазһаб)</label>
+        <select id="madhabSelect">
+          <option value="2">Ханафи</option>
+          <option value="1">Шафии / Малики / Ханбали</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ---------- Деректер: қалалар мен әдістер ----------
+const CITIES = [
+  {name:"Алматы", lat:43.2220, lon:76.8512},
+  {name:"Шымкент", lat:42.3417, lon:69.5901},
+  {name:"Ақтөбе",  lat:50.2839, lon:57.1670},
+  {name:"Орал",    lat:51.2333, lon:51.3667}
+];
+
+// ҚМДБ (Қазақстан Мұсылмандары Діни Басқармасы) ресми кестесімен
+// Алматы (14.09.2026) және Астана (01.09.2026) деректері бойынша калибрленген:
+// Таң/Құптан бұрышы 15°/15°, Бесінге +3 мин, Күн шығуға -4 мин сақтық үлес (ихтият).
+const METHODS = [
+  {name:"ҚМДБ (ресми кестеге жақын)", fajr:15, isha:15, ihtiyat:true},
+  {name:"Дүниежүзілік мұсылмандар лигасы (MWL)", fajr:18, isha:17, ihtiyat:false},
+  {name:"Түркия (Diyanet)", fajr:18, isha:17, ihtiyat:false},
+  {name:"Каир (Египет)", fajr:19.5, isha:17.5, ihtiyat:false},
+  {name:"Карачи", fajr:18, isha:18, ihtiyat:false},
+  {name:"Умм-әл-Құра (Мекке)", fajr:18.5, isha:"90min", ihtiyat:false},
+];
+
+const WEEKDAYS = ['Жексенбі','Дүйсенбі','Сейсенбі','Сәрсенбі','Бейсенбі','Жұма','Сенбі'];
+const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
+
+// ---------- Астрономиялық есептеу ----------
+const toRad = d => d * Math.PI/180;
+const toDeg = r => r * 180/Math.PI;
+
+function julianDay(date){
+  const utcNoon = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  return utcNoon/86400000 + 2440587.5;
+}
+
+function sunPosition(jd){
+  const T = (jd - 2451545.0)/36525;
+  const L0 = (280.46646 + T*(36000.76983 + T*0.0003032)) % 360;
+  const M = 357.52911 + T*(35999.05029 - 0.0001537*T);
+  const e = 0.016708634 - T*(0.000042037 + 0.0000001267*T);
+  const Mrad = toRad(M);
+  const C = (1.914602 - T*(0.004817 + 0.000014*T))*Math.sin(Mrad)
+          + (0.019993 - 0.000101*T)*Math.sin(2*Mrad)
+          + 0.000289*Math.sin(3*Mrad);
+  const trueLong = L0 + C;
+  const omega = 125.04 - 1934.136*T;
+  const appLong = trueLong - 0.00569 - 0.00478*Math.sin(toRad(omega));
+  const eps0 = 23 + (26 + (21.448 - T*(46.815 + T*(0.00059 - T*0.001813)))/60)/60;
+  const eps = eps0 + 0.00256*Math.cos(toRad(omega));
+  const decl = Math.asin(Math.sin(toRad(eps))*Math.sin(toRad(appLong)));
+  const y = Math.pow(Math.tan(toRad(eps/2)), 2);
+  const L0r = toRad(L0);
+  let eqTime = y*Math.sin(2*L0r) - 2*e*Math.sin(Mrad) + 4*e*y*Math.sin(Mrad)*Math.cos(2*L0r)
+             - 0.5*y*y*Math.sin(4*L0r) - 1.25*e*e*Math.sin(2*Mrad);
+  eqTime = toDeg(eqTime) * 4;
+  return { decl, eqTime };
+}
+
+function hourAngleHours(zenithDeg, latDeg, decl){
+  const lat = toRad(latDeg);
+  const cosH = (Math.cos(toRad(zenithDeg)) - Math.sin(lat)*Math.sin(decl)) / (Math.cos(lat)*Math.cos(decl));
+  const clamped = Math.max(-1, Math.min(1, cosH));
+  return toDeg(Math.acos(clamped))/15;
+}
+
+function computeTimes(date, lat, lon, fajrAngle, ishaSpec, asrFactor, useIhtiyat){
+  const jd = julianDay(date);
+  const { decl, eqTime } = sunPosition(jd);
+  const tz = -date.getTimezoneOffset()/60;
+  const rawDhuhr = 12 - lon/15 + tz - eqTime/60;
+
+  const dhuhrIhtiyatMin = useIhtiyat ? 3 : 0;
+  const sunriseIhtiyatMin = useIhtiyat ? -4 : 0;
+  const dhuhrDisp = rawDhuhr + dhuhrIhtiyatMin/60;
+
+  const sunH = hourAngleHours(90.833, lat, decl);
+  const fajrH = hourAngleHours(90 + fajrAngle, lat, decl);
+
+  const latR = toRad(lat);
+  const altAsr = Math.atan(1/(asrFactor + Math.tan(Math.abs(latR - decl))));
+  const asrZenith = 90 - toDeg(altAsr);
+  const asrH = hourAngleHours(asrZenith, lat, decl);
+
+  const mk = h => {
+    const d = new Date(date); d.setHours(0,0,0,0);
+    return new Date(d.getTime() + h*3600*1000);
+  };
+
+  const maghrib = mk(dhuhrDisp + sunH);
+  let isha;
+  if (typeof ishaSpec === "number"){
+    const ishaH = hourAngleHours(90 + ishaSpec, lat, decl);
+    isha = mk(rawDhuhr + ishaH);
+  } else {
+    isha = new Date(maghrib.getTime() + 90*60*1000);
+  }
+
+  return {
+    fajr: mk(rawDhuhr - fajrH),
+    sunrise: mk(rawDhuhr - sunH + sunriseIhtiyatMin/60),
+    dhuhr: mk(dhuhrDisp),
+    asr: mk(dhuhrDisp + asrH),
+    maghrib: maghrib,
+    isha: isha,
+  };
+}
+
+// ---------- UI ----------
+const citySelect = document.getElementById('citySelect');
+const methodSelect = document.getElementById('methodSelect');
+const madhabSelect = document.getElementById('madhabSelect');
+const cityLabel = document.getElementById('cityLabel');
+const dateLabel = document.getElementById('dateLabel');
+const clockEl = document.getElementById('clock');
+const nextLabelEl = document.getElementById('nextLabel');
+const nextSubEl = document.getElementById('nextSub');
+const listEl = document.getElementById('list');
+const settingsToggle = document.getElementById('settingsToggle');
+const settingsPanel = document.getElementById('settingsPanel');
+
+CITIES.forEach((c,i)=>{
+  const o = document.createElement('option');
+  o.value = i; o.textContent = c.name;
+  citySelect.appendChild(o);
+});
+citySelect.value = 0; // Алматы
+
+METHODS.forEach((m,i)=>{
+  const o = document.createElement('option');
+  o.value = i; o.textContent = m.name;
+  methodSelect.appendChild(o);
+});
+methodSelect.value = 0; // ҚМДБ
+
+madhabSelect.value = "2"; // Ханафи
+
+settingsToggle.addEventListener('click', ()=>{
+  settingsPanel.classList.toggle('open');
+});
+[citySelect, methodSelect, madhabSelect].forEach(el=>{
+  el.addEventListener('change', renderAll);
+});
+
+const PRAYER_ROWS = [
+  {key:'fajr', name:'Таң'},
+  {key:'sunrise', name:'Күн шығу', info:true},
+  {key:'dhuhr', name:'Бесін'},
+  {key:'asr', name:'Екінті'},
+  {key:'maghrib', name:'Ақшам'},
+  {key:'isha', name:'Құптан'},
+];
+
+function fmtTime(d){
+  return d.toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit', hour12:false});
+}
+function fmtClock(d){
+  return d.toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+}
+
+let todayTimes = null;
+let tomorrowFajr = null;
+
+function renderAll(){
+  const city = CITIES[citySelect.value];
+  const method = METHODS[methodSelect.value];
+  const asrFactor = parseInt(madhabSelect.value, 10);
+
+  const now = new Date();
+  todayTimes = computeTimes(now, city.lat, city.lon, method.fajr, method.isha, asrFactor, method.ihtiyat);
+
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
+  const tTimes = computeTimes(tomorrow, city.lat, city.lon, method.fajr, method.isha, asrFactor, method.ihtiyat);
+  tomorrowFajr = tTimes.fajr;
+
+  cityLabel.textContent = city.name + ' қаласы';
+  dateLabel.textContent = WEEKDAYS[now.getDay()] + ', ' + now.getDate() + ' ' + MONTHS[now.getMonth()];
+
+  renderList();
+}
+
+let nextPrayerName = null;
+let nextPrayerTime = null;
+
+function renderList(){
+  const now = new Date();
+  const targets = ['fajr','dhuhr','asr','maghrib','isha'];
+  let nextKey = null;
+  for(const k of targets){
+    if(todayTimes[k] > now){ nextKey = k; break; }
+  }
+
+  listEl.innerHTML = '';
+  PRAYER_ROWS.forEach(row=>{
+    const t = todayTimes[row.key];
+    const div = document.createElement('div');
+    div.className = 'row' + (row.info ? ' info' : '') + (t < now ? ' past' : '') + (row.key===nextKey ? ' next' : '');
+    div.innerHTML = `<span class="dot"></span><span class="name">${row.name}</span><span class="time">${fmtTime(t)}</span>`;
+    listEl.appendChild(div);
+  });
+
+  if (nextKey){
+    nextPrayerName = PRAYER_ROWS.find(r=>r.key===nextKey).name;
+    nextPrayerTime = todayTimes[nextKey];
+  } else {
+    nextPrayerName = 'Таң';
+    nextPrayerTime = tomorrowFajr;
+  }
+
+  updateCountdown();
+}
+
+function updateCountdown(){
+  if (!nextPrayerTime) return;
+  const now = new Date();
+  const diffMs = nextPrayerTime - now;
+  const totalSec = Math.max(0, Math.floor(diffMs / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+
+  nextLabelEl.textContent = `Келесі намаз: ${nextPrayerName}, ${fmtTime(nextPrayerTime)}`;
+
+  if (h > 0){
+    nextSubEl.textContent = `${h} сағ ${m} мин қалды`;
+  } else if (m > 0){
+    nextSubEl.textContent = `${m} мин қалды`;
+  } else {
+    nextSubEl.textContent = `${s} сек қалды`;
+  }
+}
+
+function tick(){
+  clockEl.textContent = fmtClock(new Date());
+  updateCountdown();
+}
+
+renderAll();
+tick();
+setInterval(tick, 1000);
+setInterval(renderList, 30000);
+setInterval(renderAll, 3600000);
+</script>
+</body>
+</html>
