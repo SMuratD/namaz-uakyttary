@@ -201,6 +201,18 @@ button {
 
 
 
+.greeting{
+  text-align:center;
+  margin:0 0 14px;
+  padding:9px 12px;
+  font-size:15px;
+  font-weight:600;
+  color:var(--gold);
+  background:var(--gold-soft);
+  border:1px solid var(--border-gold);
+  border-radius:var(--radius-md);
+}
+
   .divider{height:1px;background:var(--panel-border);margin:6px 0 14px;}
 
   .list{position:relative;padding-left:20px;}
@@ -385,6 +397,8 @@ button {
   <div class="star star-3">✦</div>
 </div>
 
+    <div class="greeting" id="greeting" hidden>Жұма қабыл болсын!</div>
+
     <div class="loc-row">
       <span class="city" id="cityLabel">Алматы қаласы</span>
       <span class="date" id="dateLabel">—</span>
@@ -537,6 +551,7 @@ const clockEl = document.getElementById('clock');
 const nextLabelEl = document.getElementById('nextLabel');
 const nextSubEl = document.getElementById('nextSub');
 const listEl = document.getElementById('list');
+const greetingEl = document.getElementById('greeting');
 const settingsToggle = document.getElementById('settingsToggle');
 const settingsPanel = document.getElementById('settingsPanel');
 
@@ -572,6 +587,12 @@ const PRAYER_ROWS = [
   {key:'isha', name:'Құптан'},
 ];
 
+// Жұма күні ғана (жергілікті уақыт бойынша 00:00–23:59)
+function isFriday(d){ return d.getDay() === 5; }
+function prayerName(row){
+  return (row.key === 'dhuhr' && isFriday(new Date())) ? 'Жұма намазы' : row.name;
+}
+
 function fmtTime(d){
   return d.toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit', hour12:false});
 }
@@ -605,6 +626,7 @@ let nextPrayerTime = null;
 
 function renderList(){
   const now = new Date();
+  greetingEl.hidden = !isFriday(now);
   const targets = ['fajr','dhuhr','asr','maghrib','isha'];
   let nextKey = null;
   for(const k of targets){
@@ -616,12 +638,12 @@ function renderList(){
     const t = todayTimes[row.key];
     const div = document.createElement('div');
     div.className = 'row' + (row.info ? ' info' : '') + (t < now ? ' past' : '') + (row.key===nextKey ? ' next' : '');
-    div.innerHTML = `<span class="dot"></span><span class="name">${row.name}</span><span class="time">${fmtTime(t)}</span>`;
+    div.innerHTML = `<span class="dot"></span><span class="name">${prayerName(row)}</span><span class="time">${fmtTime(t)}</span>`;
     listEl.appendChild(div);
   });
 
   if (nextKey){
-    nextPrayerName = PRAYER_ROWS.find(r=>r.key===nextKey).name;
+    nextPrayerName = prayerName(PRAYER_ROWS.find(r=>r.key===nextKey));
     nextPrayerTime = todayTimes[nextKey];
   } else {
     nextPrayerName = 'Таң';
