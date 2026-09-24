@@ -303,6 +303,59 @@ button {
 
   .note{font-size:11px;color:var(--muted-2);text-align:center;margin-top:16px;line-height:1.5;}
 
+  .alert-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin:0 0 14px;padding:10px 12px;
+    font-size:13px;line-height:1.4;color:var(--ink);
+    background:var(--gold-soft);
+    border:1px solid var(--border-gold);
+    border-radius:var(--radius-md);
+  }
+  .alert-bar[hidden]{display:none;}
+  .alert-bar button, .btn{
+    flex:0 0 auto;
+    background:var(--panel);
+    color:var(--ink);
+    border:1px solid var(--border-gold);
+    border-radius:8px;
+    padding:7px 12px;
+    font-size:13px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .alert-bar button[hidden]{display:none;}
+  .alert-bar button:hover, .btn:hover{background:var(--panel-hover);}
+
+  .section-title{
+    font-size:12px;color:var(--gold);letter-spacing:.04em;
+    margin:18px 0 6px;padding-top:14px;
+    border-top:1px solid var(--panel-border);
+  }
+  .switch-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:8px 0;cursor:pointer;
+  }
+  .sw-text{display:flex;flex-direction:column;gap:2px;}
+  .sw-title{font-size:14px;color:var(--ink);}
+  .sw-sub{font-size:11px;color:var(--muted);line-height:1.4;}
+  .switch{position:relative;flex:0 0 auto;width:42px;height:24px;}
+  .switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1;}
+  .switch .track{
+    position:absolute;inset:0;border-radius:999px;
+    background:rgba(255,255,255,0.14);transition:background .2s;
+  }
+  .switch .track::after{
+    content:"";position:absolute;top:3px;left:3px;
+    width:18px;height:18px;border-radius:50%;
+    background:#fff;transition:transform .2s;
+  }
+  .switch input:checked + .track{background:var(--gold);}
+  .switch input:checked + .track::after{transform:translateX(18px);}
+  .switch input:focus-visible + .track{outline:2px solid var(--gold);outline-offset:2px;}
+  .notify-status{font-size:11px;color:var(--warning);line-height:1.5;margin:4px 0 8px;}
+  .notify-status:empty{display:none;}
+  .notify-foot{font-size:11px;color:var(--muted-2);line-height:1.5;margin-top:8px;}
+
   .settings-toggle{
     display:flex;align-items:center;justify-content:center;gap:6px;
     margin-top:14px;padding:8px;
@@ -399,6 +452,11 @@ button {
 
     <div class="greeting" id="greeting" hidden>Жұма қабыл болсын!</div>
 
+    <div class="alert-bar" id="alertBar" hidden>
+      <span id="alertText"></span>
+      <button type="button" id="alertBtn" hidden></button>
+    </div>
+
     <div class="loc-row">
       <span class="city" id="cityLabel">Алматы қаласы</span>
       <span class="date" id="dateLabel">—</span>
@@ -416,7 +474,7 @@ button {
 
     <div class="note">ҚМДБ ресми кестесімен калибрленген (Алматы/Астана деректерімен тексерілді).<br>Дәлдігі шамамен ±1-2 минут.</div>
 
-    <div class="settings-toggle" id="settingsToggle">⚙ Қала мен әдісті өзгерту</div>
+    <div class="settings-toggle" id="settingsToggle">⚙ Баптаулар</div>
     <div class="settings" id="settingsPanel">
       <div class="field">
         <label for="citySelect">Қала</label>
@@ -433,6 +491,25 @@ button {
           <option value="1">Шафии / Малики / Ханбали</option>
         </select>
       </div>
+
+      <div class="section-title">ХАБАРЛАМАЛАР</div>
+      <label class="switch-row">
+        <span class="sw-text">
+          <span class="sw-title">Хабарлама жіберу</span>
+          <span class="sw-sub">Намазға 10 және 5 минут қалғанда және уақыты кіргенде</span>
+        </span>
+        <span class="switch"><input type="checkbox" id="notifyToggle"><span class="track"></span></span>
+      </label>
+      <label class="switch-row">
+        <span class="sw-text">
+          <span class="sw-title">Азан дауысы</span>
+          <span class="sw-sub">Намаз уақыты кіргенде ойнайды</span>
+        </span>
+        <span class="switch"><input type="checkbox" id="soundToggle"><span class="track"></span></span>
+      </label>
+      <div class="notify-status" id="notifyStatus"></div>
+      <button type="button" class="btn" id="testBtn">Сынау</button>
+      <div class="notify-foot">Хабарлама мен азан бет браузерде ашық тұрғанда ғана жұмыс істейді.</div>
     </div>
   </div>
 
@@ -676,7 +753,238 @@ function updateCountdown(){
 function tick(){
   clockEl.textContent = fmtClock(new Date());
   updateCountdown();
+  checkAlerts();
 }
+
+// ---------- Хабарламалар мен азан ----------
+const ALERT_OFFSETS = [600, 300, 0];   // намазға дейінгі секунд: 10 мин, 5 мин, уақыт кіргенде
+const ALERT_WINDOW  = 120;             // кешігіп қалса да осынша секундқа дейін жібереді
+const ALERT_PRAYERS = ['fajr','dhuhr','asr','maghrib','isha'];
+const SETTINGS_KEY = 'namaz-settings';
+const FIRED_KEY = 'namaz-fired';
+
+const notifyToggle = document.getElementById('notifyToggle');
+const soundToggle = document.getElementById('soundToggle');
+const notifyStatus = document.getElementById('notifyStatus');
+const testBtn = document.getElementById('testBtn');
+const alertBar = document.getElementById('alertBar');
+const alertText = document.getElementById('alertText');
+const alertBtn = document.getElementById('alertBtn');
+
+function ymd(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+// Баптаулар (браузерде сақталады)
+let settings = {notify:false, sound:false};
+try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch(e){}
+function saveSettings(){
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch(e){}
+}
+
+// Жіберілген хабарламалар (қайталанбауы үшін)
+let fired = new Set();
+try {
+  const f = JSON.parse(localStorage.getItem(FIRED_KEY) || 'null');
+  if (f && f.date === ymd(new Date())) fired = new Set(f.keys);
+} catch(e){}
+function saveFired(){
+  try { localStorage.setItem(FIRED_KEY, JSON.stringify({date: ymd(new Date()), keys: [...fired]})); } catch(e){}
+}
+
+// Service worker (Android Chrome-да хабарлама үшін керек). sw.js файлы index.html-мен бірге тұруы керек.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ----- Азан дауысы -----
+const azan = new Audio('azan.mp3');   // azan.mp3 файлын index.html жанына салыңыз
+azan.preload = 'none';
+let azanPlaying = false;
+let bannerTimer = null;
+let audioUnlocked = false;
+
+function setAlertBtn(mode){ // 'stop' | 'play' | null
+  alertBtn.dataset.mode = mode || '';
+  alertBtn.hidden = !mode;
+  alertBtn.textContent = mode === 'stop' ? 'Азанды тоқтату' : 'Азанды қосу';
+}
+function showBanner(text){
+  alertText.textContent = text;
+  alertBar.hidden = false;
+  clearTimeout(bannerTimer);
+  if (!azanPlaying){
+    setAlertBtn(null);
+    bannerTimer = setTimeout(()=>{ alertBar.hidden = true; }, 30000);
+  }
+}
+function azanFinished(){
+  azanPlaying = false;
+  setAlertBtn(null);
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(()=>{ alertBar.hidden = true; }, 15000);
+}
+azan.addEventListener('playing', ()=>{
+  if (azan.muted) return;
+  azanPlaying = true;
+  clearTimeout(bannerTimer);
+  alertBar.hidden = false;
+  setAlertBtn('stop');
+});
+azan.addEventListener('ended', azanFinished);
+azan.addEventListener('pause', ()=>{ if (azanPlaying && !azan.muted) azanFinished(); });
+
+function stopAzan(){
+  try { azan.pause(); azan.currentTime = 0; } catch(e){}
+}
+
+// azan.mp3 табылмаса, қарапайым қоңырау дыбысы шығады
+function chime(){
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    [523.25, 659.25, 783.99].forEach((f,i)=>{
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      const t0 = ctx.currentTime + i*0.45;
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.25, t0+0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, t0+1.2);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0+1.25);
+    });
+    setTimeout(()=>{ try{ ctx.close(); }catch(e){} }, 3000);
+  } catch(e){}
+}
+
+function playAzan(){
+  azan.muted = false;
+  try { azan.currentTime = 0; } catch(e){}
+  const p = azan.play();
+  if (p && p.catch) p.catch(err=>{
+    if (err && err.name === 'NotAllowedError'){
+      // Браузер дыбысты өздігінен қосуға рұқсат бермеді — бір рет басу керек
+      alertBar.hidden = false;
+      clearTimeout(bannerTimer);
+      setAlertBtn('play');
+    } else {
+      chime(); // файл жоқ немесе ойнатылмады
+    }
+  });
+}
+
+// Браузердің автоойнату шектеуін алдын ала «ашып қою» (пайдаланушы бетті басқанда)
+function unlockAudio(){
+  if (audioUnlocked || !settings.sound) return;
+  audioUnlocked = true;
+  azan.muted = true;
+  const done = ()=>{ if (azan.muted){ azan.pause(); azan.currentTime = 0; azan.muted = false; } };
+  let p;
+  try { p = azan.play(); } catch(e){}
+  if (p && p.then) p.then(done).catch(()=>{ azan.muted = false; audioUnlocked = false; });
+  else done();
+}
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev, unlockAudio));
+
+alertBtn.addEventListener('click', ()=>{
+  if (alertBtn.dataset.mode === 'stop') stopAzan();
+  else if (alertBtn.dataset.mode === 'play'){ setAlertBtn(null); playAzan(); }
+});
+
+// ----- Жүйелік хабарлама -----
+async function sendNotification(title, body, tag){
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const opts = {body, tag, renotify:true, vibrate:[200,100,200]};
+  try {
+    if ('serviceWorker' in navigator){
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg){ await reg.showNotification(title, opts); return; }
+    }
+  } catch(e){}
+  try { new Notification(title, opts); } catch(e){}
+}
+
+function alertName(key){
+  if (key === 'dhuhr' && isFriday(new Date())) return 'Жұма';
+  return PRAYER_ROWS.find(r=>r.key===key).name;
+}
+
+function fireAlert(key, offset, t){
+  const name = alertName(key);
+  const title = offset === 0
+    ? `${name} намазының уақыты кірді`
+    : `${name} намазына ${offset/60} минут қалды`;
+  const body = `${fmtTime(t)} · ${CITIES[citySelect.value].name}`;
+  showBanner(`${title} (${fmtTime(t)})`);
+  if (settings.notify) sendNotification(title, body, `namaz-${key}-${offset}`);
+  if (offset === 0 && settings.sound) playAzan();
+}
+
+function checkAlerts(){
+  if (!todayTimes || (!settings.notify && !settings.sound)) return;
+  const now = new Date();
+  if (todayTimes.dhuhr.toDateString() !== now.toDateString()) renderAll(); // жаңа күн — қайта есептеу
+  for (const key of ALERT_PRAYERS){
+    const t = todayTimes[key];
+    for (const off of ALERT_OFFSETS){
+      const late = (now.getTime() - (t.getTime() - off*1000)) / 1000;
+      if (late < 0 || late >= ALERT_WINDOW) continue;
+      const id = ymd(now) + '-' + key + '-' + off;
+      if (fired.has(id)) continue;
+      fired.add(id); saveFired();
+      fireAlert(key, off, t);
+    }
+  }
+}
+
+// ----- Баптау панелі -----
+function updateNotifyStatus(){
+  let msg = '';
+  if (!('Notification' in window)){
+    msg = 'Бұл браузер жүйелік хабарламаны қолдамайды: хабарлама тек бет ашық тұрғанда экранда көрсетіледі.';
+  } else if (Notification.permission === 'denied'){
+    msg = 'Хабарлама браузер баптауында бұғатталған. Сайт баптауынан рұқсат беріңіз.';
+  }
+  notifyStatus.textContent = msg;
+}
+
+notifyToggle.checked = !!settings.notify;
+soundToggle.checked = !!settings.sound;
+updateNotifyStatus();
+
+notifyToggle.addEventListener('change', async ()=>{
+  if (notifyToggle.checked){
+    if ('Notification' in window && Notification.permission !== 'granted'){
+      let perm = Notification.permission;
+      if (perm !== 'denied'){
+        try { perm = await Notification.requestPermission(); } catch(e){}
+      }
+      if (perm !== 'granted'){
+        notifyToggle.checked = false;
+        settings.notify = false;
+        saveSettings(); updateNotifyStatus();
+        return;
+      }
+    }
+    settings.notify = true;
+  } else {
+    settings.notify = false;
+  }
+  saveSettings(); updateNotifyStatus();
+});
+
+soundToggle.addEventListener('change', ()=>{
+  settings.sound = soundToggle.checked;
+  saveSettings();
+  if (settings.sound) unlockAudio(); else stopAzan();
+});
+
+testBtn.addEventListener('click', ()=>{
+  showBanner('Сынақ: хабарлама жұмыс істеп тұр');
+  if (settings.notify) sendNotification('Сынақ хабарламасы', 'Хабарлама жұмыс істеп тұр', 'namaz-test');
+  if (settings.sound) playAzan();
+});
 
 renderAll();
 tick();
