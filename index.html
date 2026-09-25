@@ -534,6 +534,13 @@ const METHODS = [
   {name:"Умм-әл-Құра (Мекке)", fajr:18.5, isha:"90min", ihtiyat:false},
 ];
 
+// Жұма намазының нақты уақыты (мешіт кестесі бойынша). Тек "Келесі намаз" көрсеткішінде
+// қолданылады — бесін жолының өзі әрдайым есептелген уақытымен тұра береді.
+// Деректер бар қалалар үшін ғана қолданылады.
+const JUMA_TIMES = {
+  "Алматы": "13:10",
+};
+
 const WEEKDAYS = ['Жексенбі','Дүйсенбі','Сейсенбі','Сәрсенбі','Бейсенбі','Жұма','Сенбі'];
 const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
 
@@ -666,9 +673,6 @@ const PRAYER_ROWS = [
 
 // Жұма күні ғана (жергілікті уақыт бойынша 00:00–23:59)
 function isFriday(d){ return d.getDay() === 5; }
-function prayerName(row){
-  return (row.key === 'dhuhr' && isFriday(new Date())) ? 'Жұма намазы' : row.name;
-}
 
 function fmtTime(d){
   return d.toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit', hour12:false});
@@ -679,6 +683,7 @@ function fmtClock(d){
 
 let todayTimes = null;
 let tomorrowFajr = null;
+let jumaTime = null; // Жұма намазының нақты уақыты (тек Жексенбіде/Жұмада, деректер бар қалада)
 
 function renderAll(){
   const city = CITIES[citySelect.value];
@@ -687,6 +692,13 @@ function renderAll(){
 
   const now = new Date();
   todayTimes = computeTimes(now, city.lat, city.lon, method.fajr, method.isha, asrFactor, method.ihtiyat);
+
+  jumaTime = null;
+  const jumaHm = JUMA_TIMES[city.name];
+  if (jumaHm && isFriday(now)){
+    const [h,m] = jumaHm.split(':').map(Number);
+    jumaTime = new Date(now); jumaTime.setHours(h,m,0,0);
+  }
 
   const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
   const tTimes = computeTimes(tomorrow, city.lat, city.lon, method.fajr, method.isha, asrFactor, method.ihtiyat);
@@ -701,13 +713,18 @@ function renderAll(){
 let nextPrayerName = null;
 let nextPrayerTime = null;
 
+// "Келесі намаз" анықтауға арналған уақыт: бесінге Жұма күні нақты Жұма уақыты бар болса, сол қолданылады.
+function effectiveTime(key){
+  return (key === 'dhuhr' && jumaTime) ? jumaTime : todayTimes[key];
+}
+
 function renderList(){
   const now = new Date();
   greetingEl.hidden = !isFriday(now);
   const targets = ['fajr','dhuhr','asr','maghrib','isha'];
   let nextKey = null;
   for(const k of targets){
-    if(todayTimes[k] > now){ nextKey = k; break; }
+    if(effectiveTime(k) > now){ nextKey = k; break; }
   }
 
   listEl.innerHTML = '';
@@ -715,13 +732,13 @@ function renderList(){
     const t = todayTimes[row.key];
     const div = document.createElement('div');
     div.className = 'row' + (row.info ? ' info' : '') + (t < now ? ' past' : '') + (row.key===nextKey ? ' next' : '');
-    div.innerHTML = `<span class="dot"></span><span class="name">${prayerName(row)}</span><span class="time">${fmtTime(t)}</span>`;
+    div.innerHTML = `<span class="dot"></span><span class="name">${row.name}</span><span class="time">${fmtTime(t)}</span>`;
     listEl.appendChild(div);
   });
 
   if (nextKey){
-    nextPrayerName = prayerName(PRAYER_ROWS.find(r=>r.key===nextKey));
-    nextPrayerTime = todayTimes[nextKey];
+    nextPrayerName = (nextKey === 'dhuhr' && isFriday(now)) ? 'Жұма намазы' : PRAYER_ROWS.find(r=>r.key===nextKey).name;
+    nextPrayerTime = effectiveTime(nextKey);
   } else {
     nextPrayerName = 'Таң';
     nextPrayerTime = tomorrowFajr;
@@ -926,7 +943,7 @@ function checkAlerts(){
   const now = new Date();
   if (todayTimes.dhuhr.toDateString() !== now.toDateString()) renderAll(); // жаңа күн — қайта есептеу
   for (const key of ALERT_PRAYERS){
-    const t = todayTimes[key];
+    const t = effectiveTime(key);
     for (const off of ALERT_OFFSETS){
       const late = (now.getTime() - (t.getTime() - off*1000)) / 1000;
       if (late < 0 || late >= ALERT_WINDOW) continue;
