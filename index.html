@@ -201,6 +201,31 @@ button {
 
 
 
+.lang-row{
+  display:flex;
+  justify-content:flex-end;
+  gap:6px;
+  margin:0 0 10px;
+}
+.lang-btn{
+  background:var(--panel);
+  color:var(--muted);
+  border:1px solid var(--panel-border);
+  border-radius:999px;
+  padding:4px 11px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.03em;
+  font-family:inherit;
+  cursor:pointer;
+}
+.lang-btn:hover{ background:var(--panel-hover); color:var(--ink); }
+.lang-btn.active{
+  background:var(--gold-soft);
+  border-color:var(--border-gold);
+  color:var(--gold);
+}
+
 .greeting{
   text-align:center;
   margin:0 0 14px;
@@ -443,6 +468,12 @@ button {
 </head>
 <body>
   <div class="card">
+    <div class="lang-row" id="langRow">
+      <button type="button" class="lang-btn" data-lang="kk">ҚАЗ</button>
+      <button type="button" class="lang-btn" data-lang="en">ENG</button>
+      <button type="button" class="lang-btn" data-lang="ru">РУС</button>
+    </div>
+
     <div class="sky-icon" id="skyIcon">
   <div class="sun-or-moon"></div>
   <div class="star star-1">✦</div>
@@ -472,77 +503,200 @@ button {
 
     <div class="list" id="list"></div>
 
-    <div class="note">ҚМДБ ресми кестесімен калибрленген (Алматы/Астана деректерімен тексерілді).<br>Дәлдігі шамамен ±1-2 минут.</div>
+    <div class="note" id="noteText">ҚМДБ ресми кестесімен калибрленген (Алматы/Астана деректерімен тексерілді).<br>Дәлдігі шамамен ±1-2 минут.</div>
 
     <div class="settings-toggle" id="settingsToggle">⚙ Баптаулар</div>
     <div class="settings" id="settingsPanel">
       <div class="field">
-        <label for="citySelect">Қала</label>
+        <label for="citySelect" id="cityFieldLabel">Қала</label>
         <select id="citySelect"></select>
       </div>
       <div class="field">
-        <label for="methodSelect">Есептеу әдісі</label>
+        <label for="methodSelect" id="methodFieldLabel">Есептеу әдісі</label>
         <select id="methodSelect"></select>
       </div>
       <div class="field">
-        <label for="madhabSelect">Екінті уақыты (мазһаб)</label>
+        <label for="madhabSelect" id="madhabFieldLabel">Екінті уақыты (мазһаб)</label>
         <select id="madhabSelect">
-          <option value="2">Ханафи</option>
-          <option value="1">Шафии / Малики / Ханбали</option>
+          <option value="2" id="hanafiOpt">Ханафи</option>
+          <option value="1" id="shafiiOpt">Шафии / Малики / Ханбали</option>
         </select>
       </div>
 
-      <div class="section-title">ХАБАРЛАМАЛАР</div>
+      <div class="section-title" id="notifSectionTitle">ХАБАРЛАМАЛАР</div>
       <label class="switch-row">
         <span class="sw-text">
-          <span class="sw-title">Хабарлама жіберу</span>
-          <span class="sw-sub">Намазға 10 және 5 минут қалғанда және уақыты кіргенде</span>
+          <span class="sw-title" id="notifySwTitle">Хабарлама жіберу</span>
+          <span class="sw-sub" id="notifySwSub">Намазға 10 және 5 минут қалғанда және уақыты кіргенде</span>
         </span>
         <span class="switch"><input type="checkbox" id="notifyToggle"><span class="track"></span></span>
       </label>
       <label class="switch-row">
         <span class="sw-text">
-          <span class="sw-title">Азан дауысы</span>
-          <span class="sw-sub">Намаз уақыты кіргенде ойнайды</span>
+          <span class="sw-title" id="soundSwTitle">Азан дауысы</span>
+          <span class="sw-sub" id="soundSwSub">Намаз уақыты кіргенде ойнайды</span>
         </span>
         <span class="switch"><input type="checkbox" id="soundToggle"><span class="track"></span></span>
       </label>
       <div class="notify-status" id="notifyStatus"></div>
       <button type="button" class="btn" id="testBtn">Сынау</button>
-      <div class="notify-foot">Хабарлама мен азан бет браузерде ашық тұрғанда ғана жұмыс істейді.</div>
+      <div class="notify-foot" id="notifyFoot">Хабарлама мен азан бет браузерде ашық тұрғанда ғана жұмыс істейді.</div>
     </div>
   </div>
 
 <script>
 // ---------- Деректер: қалалар мен әдістер ----------
 const CITIES = [
-  {name:"Алматы", lat:43.2220, lon:76.8512},
-  {name:"Шымкент", lat:42.3417, lon:69.5901},
-  {name:"Ақтөбе",  lat:50.2839, lon:57.1670},
-  {name:"Орал",    lat:51.2333, lon:51.3667}
+  {key:'almaty',   lat:43.2220, lon:76.8512, name:{kk:"Алматы",  en:"Almaty",   ru:"Алматы"}},
+  {key:'shymkent', lat:42.3417, lon:69.5901, name:{kk:"Шымкент", en:"Shymkent", ru:"Шымкент"}},
+  {key:'aktobe',   lat:50.2839, lon:57.1670, name:{kk:"Ақтөбе",  en:"Aktobe",   ru:"Актобе"}},
+  {key:'oral',     lat:51.2333, lon:51.3667, name:{kk:"Орал",    en:"Oral",     ru:"Уральск"}},
 ];
+function cityName(city){ return city.name[lang]; }
 
 // ҚМДБ (Қазақстан Мұсылмандары Діни Басқармасы) ресми кестесімен
 // Алматы (14.09.2026) және Астана (01.09.2026) деректері бойынша калибрленген:
 // Таң/Құптан бұрышы 15°/15°, Бесінге +3 мин, Күн шығуға -4 мин сақтық үлес (ихтият).
 const METHODS = [
-  {name:"ҚМДБ (ресми кестеге жақын)", fajr:15, isha:15, ihtiyat:true},
-  {name:"Дүниежүзілік мұсылмандар лигасы (MWL)", fajr:18, isha:17, ihtiyat:false},
-  {name:"Түркия (Diyanet)", fajr:18, isha:17, ihtiyat:false},
-  {name:"Каир (Египет)", fajr:19.5, isha:17.5, ihtiyat:false},
-  {name:"Карачи", fajr:18, isha:18, ihtiyat:false},
-  {name:"Умм-әл-Құра (Мекке)", fajr:18.5, isha:"90min", ihtiyat:false},
+  {fajr:15,   isha:15,      ihtiyat:true,  name:{kk:"ҚМДБ (ресми кестеге жақын)", en:"Kazakhstan Muftiate (closest to official)", ru:"ДУМК (близко к официальному)"}},
+  {fajr:18,   isha:17,      ihtiyat:false, name:{kk:"Дүниежүзілік мұсылмандар лигасы (MWL)", en:"Muslim World League (MWL)", ru:"Всемирная мусульманская лига (MWL)"}},
+  {fajr:18,   isha:17,      ihtiyat:false, name:{kk:"Түркия (Diyanet)", en:"Turkey (Diyanet)", ru:"Турция (Diyanet)"}},
+  {fajr:19.5, isha:17.5,    ihtiyat:false, name:{kk:"Каир (Египет)", en:"Cairo (Egypt)", ru:"Каир (Египет)"}},
+  {fajr:18,   isha:18,      ihtiyat:false, name:{kk:"Карачи", en:"Karachi", ru:"Карачи"}},
+  {fajr:18.5, isha:"90min", ihtiyat:false, name:{kk:"Умм-әл-Құра (Мекке)", en:"Umm al-Qura (Mecca)", ru:"Умм-эль-Кура (Мекка)"}},
 ];
+function methodName(m){ return m.name[lang]; }
 
 // Жұма намазының нақты уақыты (мешіт кестесі бойынша). Тек "Келесі намаз" көрсеткішінде
 // қолданылады — бесін жолының өзі әрдайым есептелген уақытымен тұра береді.
 // Деректер бар қалалар үшін ғана қолданылады.
 const JUMA_TIMES = {
-  "Алматы": "13:10",
+  almaty: "13:10",
 };
 
-const WEEKDAYS = ['Жексенбі','Дүйсенбі','Сейсенбі','Сәрсенбі','Бейсенбі','Жұма','Сенбі'];
-const MONTHS = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
+// ---------- Тілдер ----------
+const LANG_KEY = 'namaz-lang';
+let lang = 'kk';
+try { const saved = localStorage.getItem(LANG_KEY); if (saved && ['kk','en','ru'].includes(saved)) lang = saved; } catch(e){}
+const LOCALE_MAP = { kk:'kk-KZ', en:'en-GB', ru:'ru-RU' };
+
+const I18N = {
+  kk: {
+    pageTitle: 'Намазға уақыты болды',
+    cityLabel: name => `${name} қаласы`,
+    jumuahMubarak: 'Жұма қабыл болсын!',
+    settingsLabel: 'Баптаулар',
+    cityFieldLabel: 'Қала',
+    methodFieldLabel: 'Есептеу әдісі',
+    madhabFieldLabel: 'Екінті уақыты (мазһаб)',
+    hanafiOption: 'Ханафи',
+    shafiiOption: 'Шафии / Малики / Ханбали',
+    notificationsSectionTitle: 'ХАБАРЛАМАЛАР',
+    notifySwTitle: 'Хабарлама жіберу',
+    notifySwSub: 'Намазға 10 және 5 минут қалғанда және уақыты кіргенде',
+    soundSwTitle: 'Азан дауысы',
+    soundSwSub: 'Намаз уақыты кіргенде ойнайды',
+    testBtn: 'Сынау',
+    notifyFoot: 'Хабарлама мен азан бет браузерде ашық тұрғанда ғана жұмыс істейді.',
+    noteLine1: 'ҚМДБ ресми кестесімен калибрленген (Алматы/Астана деректерімен тексерілді).',
+    noteLine2: 'Дәлдігі шамамен ±1-2 минут.',
+    calculating: 'Есептелуде…',
+    nextPrayerLabel: (name, time) => `Келесі намаз: ${name}, ${time}`,
+    remainingH: (h,m) => `${h} сағ ${m} мин қалды`,
+    remainingM: m => `${m} мин қалды`,
+    remainingS: s => `${s} сек қалды`,
+    fridayPrayerFull: 'Жұма намазы',
+    prayerNames: {fajr:'Таң', sunrise:'Күн шығу', dhuhr:'Бесін', asr:'Екінті', maghrib:'Ақшам', isha:'Құптан', friday:'Жұма'},
+    weekdays: ['Жексенбі','Дүйсенбі','Сейсенбі','Сәрсенбі','Бейсенбі','Жұма','Сенбі'],
+    months: ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'],
+    alertNow: name => `${name} намазының уақыты кірді`,
+    alertBefore: (name, min) => `${name} намазына ${min} минут қалды`,
+    stopAzan: 'Азанды тоқтату',
+    playAzan: 'Азанды қосу',
+    notifNotSupported: 'Бұл браузер жүйелік хабарламаны қолдамайды: хабарлама тек бет ашық тұрғанда экранда көрсетіледі.',
+    notifDenied: 'Хабарлама браузер баптауында бұғатталған. Сайт баптауынан рұқсат беріңіз.',
+    testBanner: 'Сынақ: хабарлама жұмыс істеп тұр',
+    testNotifTitle: 'Сынақ хабарламасы',
+    testNotifBody: 'Хабарлама жұмыс істеп тұр',
+  },
+  en: {
+    pageTitle: 'Prayer Times',
+    cityLabel: name => name,
+    jumuahMubarak: "Jumu'ah Mubarak!",
+    settingsLabel: 'Settings',
+    cityFieldLabel: 'City',
+    methodFieldLabel: 'Calculation method',
+    madhabFieldLabel: 'Asr time (madhab)',
+    hanafiOption: 'Hanafi',
+    shafiiOption: "Shafi'i / Maliki / Hanbali",
+    notificationsSectionTitle: 'NOTIFICATIONS',
+    notifySwTitle: 'Send notifications',
+    notifySwSub: '10 and 5 minutes before each prayer, and when it starts',
+    soundSwTitle: 'Azan sound',
+    soundSwSub: 'Plays when the prayer time starts',
+    testBtn: 'Test',
+    notifyFoot: 'Notifications and azan only work while this page is open in the browser.',
+    noteLine1: 'Calibrated to the official KMDB (Kazakhstan Muftiate) schedule (checked against Almaty/Astana data).',
+    noteLine2: 'Accuracy is about ±1-2 minutes.',
+    calculating: 'Calculating…',
+    nextPrayerLabel: (name, time) => `Next prayer: ${name}, ${time}`,
+    remainingH: (h,m) => `${h}h ${m}m left`,
+    remainingM: m => `${m} min left`,
+    remainingS: s => `${s} sec left`,
+    fridayPrayerFull: 'Friday Prayer',
+    prayerNames: {fajr:'Fajr', sunrise:'Sunrise', dhuhr:'Dhuhr', asr:'Asr', maghrib:'Maghrib', isha:'Isha', friday:'Friday'},
+    weekdays: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    months: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    alertNow: name => `Time for ${name} prayer`,
+    alertBefore: (name, min) => `${min} min until ${name} prayer`,
+    stopAzan: 'Stop azan',
+    playAzan: 'Play azan',
+    notifNotSupported: "This browser doesn't support system notifications: alerts will only show on screen while the page is open.",
+    notifDenied: 'Notifications are blocked in your browser settings. Please allow them for this site.',
+    testBanner: 'Test: notifications are working',
+    testNotifTitle: 'Test notification',
+    testNotifBody: 'Notifications are working',
+  },
+  ru: {
+    pageTitle: 'Время намаза',
+    cityLabel: name => `г. ${name}`,
+    jumuahMubarak: 'Джума мубарак!',
+    settingsLabel: 'Настройки',
+    cityFieldLabel: 'Город',
+    methodFieldLabel: 'Метод расчёта',
+    madhabFieldLabel: 'Время Аср (мазхаб)',
+    hanafiOption: 'Ханафитский',
+    shafiiOption: 'Шафии / Малики / Ханбали',
+    notificationsSectionTitle: 'УВЕДОМЛЕНИЯ',
+    notifySwTitle: 'Отправлять уведомления',
+    notifySwSub: 'За 10 и 5 минут до намаза и в момент его наступления',
+    soundSwTitle: 'Звук азана',
+    soundSwSub: 'Звучит при наступлении времени намаза',
+    testBtn: 'Проверить',
+    notifyFoot: 'Уведомления и азан работают, только пока эта страница открыта в браузере.',
+    noteLine1: 'Откалибровано по официальному расписанию ДУМК (сверено с данными Алматы/Астаны).',
+    noteLine2: 'Точность около ±1-2 минут.',
+    calculating: 'Вычисляется…',
+    nextPrayerLabel: (name, time) => `Следующий намаз: ${name}, ${time}`,
+    remainingH: (h,m) => `Осталось ${h} ч ${m} мин`,
+    remainingM: m => `Осталось ${m} мин`,
+    remainingS: s => `Осталось ${s} сек`,
+    fridayPrayerFull: 'Пятничный намаз',
+    prayerNames: {fajr:'Фаджр', sunrise:'Восход', dhuhr:'Зухр', asr:'Аср', maghrib:'Магриб', isha:'Иша', friday:'Джума'},
+    weekdays: ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'],
+    months: ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
+    alertNow: name => `Время намаза «${name}»`,
+    alertBefore: (name, min) => `До намаза «${name}» осталось ${min} мин`,
+    stopAzan: 'Остановить азан',
+    playAzan: 'Включить азан',
+    notifNotSupported: 'Этот браузер не поддерживает системные уведомления: они будут показаны только на странице, пока она открыта.',
+    notifDenied: 'Уведомления заблокированы в настройках браузера. Разрешите их для этого сайта.',
+    testBanner: 'Проверка: уведомления работают',
+    testNotifTitle: 'Тестовое уведомление',
+    testNotifBody: 'Уведомления работают',
+  },
+};
+function t(key){ return I18N[lang][key]; }
 
 // ---------- Астрономиялық есептеу ----------
 const toRad = d => d * Math.PI/180;
@@ -638,22 +792,38 @@ const listEl = document.getElementById('list');
 const greetingEl = document.getElementById('greeting');
 const settingsToggle = document.getElementById('settingsToggle');
 const settingsPanel = document.getElementById('settingsPanel');
+const hanafiOpt = document.getElementById('hanafiOpt');
+const shafiiOpt = document.getElementById('shafiiOpt');
+const cityFieldLabel = document.getElementById('cityFieldLabel');
+const methodFieldLabel = document.getElementById('methodFieldLabel');
+const madhabFieldLabel = document.getElementById('madhabFieldLabel');
+const notifSectionTitle = document.getElementById('notifSectionTitle');
+const notifySwTitleEl = document.getElementById('notifySwTitle');
+const notifySwSubEl = document.getElementById('notifySwSub');
+const soundSwTitleEl = document.getElementById('soundSwTitle');
+const soundSwSubEl = document.getElementById('soundSwSub');
+const notifyFootEl = document.getElementById('notifyFoot');
+const noteTextEl = document.getElementById('noteText');
 
-CITIES.forEach((c,i)=>{
-  const o = document.createElement('option');
-  o.value = i; o.textContent = c.name;
-  citySelect.appendChild(o);
-});
-citySelect.value = 0; // Алматы
+function populateSelects(){
+  const cityVal = citySelect.value;
+  citySelect.innerHTML = '';
+  CITIES.forEach((c,i)=>{
+    const o = document.createElement('option');
+    o.value = i; o.textContent = cityName(c);
+    citySelect.appendChild(o);
+  });
+  citySelect.value = cityVal !== '' ? cityVal : 0;
 
-METHODS.forEach((m,i)=>{
-  const o = document.createElement('option');
-  o.value = i; o.textContent = m.name;
-  methodSelect.appendChild(o);
-});
-methodSelect.value = 0; // ҚМДБ
-
-madhabSelect.value = "2"; // Ханафи
+  const methodVal = methodSelect.value;
+  methodSelect.innerHTML = '';
+  METHODS.forEach((m,i)=>{
+    const o = document.createElement('option');
+    o.value = i; o.textContent = methodName(m);
+    methodSelect.appendChild(o);
+  });
+  methodSelect.value = methodVal !== '' ? methodVal : 0;
+}
 
 settingsToggle.addEventListener('click', ()=>{
   settingsPanel.classList.toggle('open');
@@ -661,29 +831,27 @@ settingsToggle.addEventListener('click', ()=>{
 [citySelect, methodSelect, madhabSelect].forEach(el=>{
   el.addEventListener('change', renderAll);
 });
+document.querySelectorAll('.lang-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
+});
 
-const PRAYER_ROWS = [
-  {key:'fajr', name:'Таң'},
-  {key:'sunrise', name:'Күн шығу', info:true},
-  {key:'dhuhr', name:'Бесін'},
-  {key:'asr', name:'Екінті'},
-  {key:'maghrib', name:'Ақшам'},
-  {key:'isha', name:'Құптан'},
+const ROW_KEYS = [
+  {key:'fajr'}, {key:'sunrise', info:true}, {key:'dhuhr'}, {key:'asr'}, {key:'maghrib'}, {key:'isha'},
 ];
 
 // Жұма күні ғана (жергілікті уақыт бойынша 00:00–23:59)
 function isFriday(d){ return d.getDay() === 5; }
 
 function fmtTime(d){
-  return d.toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit', hour12:false});
+  return d.toLocaleTimeString(LOCALE_MAP[lang], {hour:'2-digit', minute:'2-digit', hour12:false});
 }
 function fmtClock(d){
-  return d.toLocaleTimeString('kk-KZ', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+  return d.toLocaleTimeString(LOCALE_MAP[lang], {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
 }
 
 let todayTimes = null;
 let tomorrowFajr = null;
-let jumaTime = null; // Жұма намазының нақты уақыты (тек Жексенбіде/Жұмада, деректер бар қалада)
+let jumaTime = null; // Жұма намазының нақты уақыты (тек жұмада, деректер бар қалада)
 
 function renderAll(){
   const city = CITIES[citySelect.value];
@@ -694,7 +862,7 @@ function renderAll(){
   todayTimes = computeTimes(now, city.lat, city.lon, method.fajr, method.isha, asrFactor, method.ihtiyat);
 
   jumaTime = null;
-  const jumaHm = JUMA_TIMES[city.name];
+  const jumaHm = JUMA_TIMES[city.key];
   if (jumaHm && isFriday(now)){
     const [h,m] = jumaHm.split(':').map(Number);
     jumaTime = new Date(now); jumaTime.setHours(h,m,0,0);
@@ -704,8 +872,8 @@ function renderAll(){
   const tTimes = computeTimes(tomorrow, city.lat, city.lon, method.fajr, method.isha, asrFactor, method.ihtiyat);
   tomorrowFajr = tTimes.fajr;
 
-  cityLabel.textContent = city.name + ' қаласы';
-  dateLabel.textContent = WEEKDAYS[now.getDay()] + ', ' + now.getDate() + ' ' + MONTHS[now.getMonth()];
+  cityLabel.textContent = t('cityLabel')(cityName(city));
+  dateLabel.textContent = `${t('weekdays')[now.getDay()]}, ${now.getDate()} ${t('months')[now.getMonth()]}`;
 
   renderList();
 }
@@ -727,20 +895,21 @@ function renderList(){
     if(effectiveTime(k) > now){ nextKey = k; break; }
   }
 
+  const names = t('prayerNames');
   listEl.innerHTML = '';
-  PRAYER_ROWS.forEach(row=>{
-    const t = todayTimes[row.key];
+  ROW_KEYS.forEach(row=>{
+    const time = todayTimes[row.key];
     const div = document.createElement('div');
-    div.className = 'row' + (row.info ? ' info' : '') + (t < now ? ' past' : '') + (row.key===nextKey ? ' next' : '');
-    div.innerHTML = `<span class="dot"></span><span class="name">${row.name}</span><span class="time">${fmtTime(t)}</span>`;
+    div.className = 'row' + (row.info ? ' info' : '') + (time < now ? ' past' : '') + (row.key===nextKey ? ' next' : '');
+    div.innerHTML = `<span class="dot"></span><span class="name">${names[row.key]}</span><span class="time">${fmtTime(time)}</span>`;
     listEl.appendChild(div);
   });
 
   if (nextKey){
-    nextPrayerName = (nextKey === 'dhuhr' && isFriday(now)) ? 'Жұма намазы' : PRAYER_ROWS.find(r=>r.key===nextKey).name;
+    nextPrayerName = (nextKey === 'dhuhr' && isFriday(now)) ? t('fridayPrayerFull') : names[nextKey];
     nextPrayerTime = effectiveTime(nextKey);
   } else {
-    nextPrayerName = 'Таң';
+    nextPrayerName = names.fajr;
     nextPrayerTime = tomorrowFajr;
   }
 
@@ -756,14 +925,14 @@ function updateCountdown(){
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
 
-  nextLabelEl.textContent = `Келесі намаз: ${nextPrayerName}, ${fmtTime(nextPrayerTime)}`;
+  nextLabelEl.textContent = t('nextPrayerLabel')(nextPrayerName, fmtTime(nextPrayerTime));
 
   if (h > 0){
-    nextSubEl.textContent = `${h} сағ ${m} мин қалды`;
+    nextSubEl.textContent = t('remainingH')(h, m);
   } else if (m > 0){
-    nextSubEl.textContent = `${m} мин қалды`;
+    nextSubEl.textContent = t('remainingM')(m);
   } else {
-    nextSubEl.textContent = `${s} сек қалды`;
+    nextSubEl.textContent = t('remainingS')(s);
   }
 }
 
@@ -824,7 +993,7 @@ let audioUnlocked = false;
 function setAlertBtn(mode){ // 'stop' | 'play' | null
   alertBtn.dataset.mode = mode || '';
   alertBtn.hidden = !mode;
-  alertBtn.textContent = mode === 'stop' ? 'Азанды тоқтату' : 'Азанды қосу';
+  alertBtn.textContent = mode === 'stop' ? t('stopAzan') : t('playAzan');
 }
 function showBanner(text){
   alertText.textContent = text;
@@ -923,17 +1092,15 @@ async function sendNotification(title, body, tag){
 }
 
 function alertName(key){
-  if (key === 'dhuhr' && isFriday(new Date())) return 'Жұма';
-  return PRAYER_ROWS.find(r=>r.key===key).name;
+  if (key === 'dhuhr' && isFriday(new Date())) return t('prayerNames').friday;
+  return t('prayerNames')[key];
 }
 
-function fireAlert(key, offset, t){
+function fireAlert(key, offset, atTime){
   const name = alertName(key);
-  const title = offset === 0
-    ? `${name} намазының уақыты кірді`
-    : `${name} намазына ${offset/60} минут қалды`;
-  const body = `${fmtTime(t)} · ${CITIES[citySelect.value].name}`;
-  showBanner(`${title} (${fmtTime(t)})`);
+  const title = offset === 0 ? t('alertNow')(name) : t('alertBefore')(name, offset/60);
+  const body = `${fmtTime(atTime)} · ${cityName(CITIES[citySelect.value])}`;
+  showBanner(`${title} (${fmtTime(atTime)})`);
   if (settings.notify) sendNotification(title, body, `namaz-${key}-${offset}`);
   if (offset === 0 && settings.sound) playAzan();
 }
@@ -943,14 +1110,14 @@ function checkAlerts(){
   const now = new Date();
   if (todayTimes.dhuhr.toDateString() !== now.toDateString()) renderAll(); // жаңа күн — қайта есептеу
   for (const key of ALERT_PRAYERS){
-    const t = effectiveTime(key);
+    const when = effectiveTime(key);
     for (const off of ALERT_OFFSETS){
-      const late = (now.getTime() - (t.getTime() - off*1000)) / 1000;
+      const late = (now.getTime() - (when.getTime() - off*1000)) / 1000;
       if (late < 0 || late >= ALERT_WINDOW) continue;
       const id = ymd(now) + '-' + key + '-' + off;
       if (fired.has(id)) continue;
       fired.add(id); saveFired();
-      fireAlert(key, off, t);
+      fireAlert(key, off, when);
     }
   }
 }
@@ -959,16 +1126,15 @@ function checkAlerts(){
 function updateNotifyStatus(){
   let msg = '';
   if (!('Notification' in window)){
-    msg = 'Бұл браузер жүйелік хабарламаны қолдамайды: хабарлама тек бет ашық тұрғанда экранда көрсетіледі.';
+    msg = t('notifNotSupported');
   } else if (Notification.permission === 'denied'){
-    msg = 'Хабарлама браузер баптауында бұғатталған. Сайт баптауынан рұқсат беріңіз.';
+    msg = t('notifDenied');
   }
   notifyStatus.textContent = msg;
 }
 
 notifyToggle.checked = !!settings.notify;
 soundToggle.checked = !!settings.sound;
-updateNotifyStatus();
 
 notifyToggle.addEventListener('change', async ()=>{
   if (notifyToggle.checked){
@@ -998,12 +1164,47 @@ soundToggle.addEventListener('change', ()=>{
 });
 
 testBtn.addEventListener('click', ()=>{
-  showBanner('Сынақ: хабарлама жұмыс істеп тұр');
-  if (settings.notify) sendNotification('Сынақ хабарламасы', 'Хабарлама жұмыс істеп тұр', 'namaz-test');
+  showBanner(t('testBanner'));
+  if (settings.notify) sendNotification(t('testNotifTitle'), t('testNotifBody'), 'namaz-test');
   if (settings.sound) playAzan();
 });
 
-renderAll();
+// ----- Тілді қолдану -----
+function applyStaticText(){
+  document.title = t('pageTitle');
+  document.documentElement.lang = lang;
+  greetingEl.textContent = t('jumuahMubarak');
+  settingsToggle.textContent = '⚙ ' + t('settingsLabel');
+  cityFieldLabel.textContent = t('cityFieldLabel');
+  methodFieldLabel.textContent = t('methodFieldLabel');
+  madhabFieldLabel.textContent = t('madhabFieldLabel');
+  hanafiOpt.textContent = t('hanafiOption');
+  shafiiOpt.textContent = t('shafiiOption');
+  notifSectionTitle.textContent = t('notificationsSectionTitle');
+  notifySwTitleEl.textContent = t('notifySwTitle');
+  notifySwSubEl.textContent = t('notifySwSub');
+  soundSwTitleEl.textContent = t('soundSwTitle');
+  soundSwSubEl.textContent = t('soundSwSub');
+  testBtn.textContent = t('testBtn');
+  notifyFootEl.textContent = t('notifyFoot');
+  noteTextEl.innerHTML = `${t('noteLine1')}<br>${t('noteLine2')}`;
+  nextLabelEl.textContent = t('calculating');
+  document.querySelectorAll('.lang-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  updateNotifyStatus();
+}
+
+function setLang(newLang){
+  lang = newLang;
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+  applyStaticText();
+  populateSelects();
+  renderAll();
+}
+
+madhabSelect.value = "2"; // Ханафи
+setLang(lang);
 tick();
 setInterval(tick, 1000);
 setInterval(renderList, 30000);
