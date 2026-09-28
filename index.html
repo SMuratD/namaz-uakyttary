@@ -96,13 +96,11 @@
     --blur: blur(12px);
   }
   *{box-sizing:border-box;}
-  html,body{height:100%;}
   body{
     margin:0;
     min-height:100vh;
+    min-height:100dvh;
     display:flex;
-    align-items:center;
-    justify-content:center;
     background:linear-gradient(160deg,var(--bg-0) 0%,var(--bg-1) 55%,var(--bg-0) 100%);
     font-family:"Segoe UI",-apple-system,"Helvetica Neue",Arial,sans-serif;
     color:var(--ink);
@@ -114,6 +112,7 @@ button {
   .card{
     width:100%;
     max-width:420px;
+    margin:auto;
     background:var(--panel);
     border:1px solid var(--panel-border);
     border-radius:var(--radius-lg);
@@ -352,18 +351,19 @@ button {
   .alert-bar button:hover, .btn:hover{background:var(--panel-hover);}
 
   .section-title{
-    font-size:12px;color:var(--gold);letter-spacing:.04em;
-    margin:18px 0 6px;padding-top:14px;
-    border-top:1px solid var(--panel-border);
+    font-size:11px;font-weight:600;color:var(--gold);letter-spacing:.08em;
+    margin:0 0 10px;
   }
   .switch-row{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:8px 0;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:12px 0;cursor:pointer;
+    border-top:1px solid var(--panel-border);
   }
+  .section-title + .switch-row{border-top:0;padding-top:4px;}
   .sw-text{display:flex;flex-direction:column;gap:2px;}
-  .sw-title{font-size:14px;color:var(--ink);}
-  .sw-sub{font-size:11px;color:var(--muted);line-height:1.4;}
-  .switch{position:relative;flex:0 0 auto;width:42px;height:24px;}
+  .sw-title{font-size:15px;color:var(--ink);}
+  .sw-sub{font-size:12px;color:var(--muted);line-height:1.4;}
+  .switch{position:relative;flex:0 0 auto;width:46px;height:26px;}
   .switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1;}
   .switch .track{
     position:absolute;inset:0;border-radius:999px;
@@ -371,41 +371,117 @@ button {
   }
   .switch .track::after{
     content:"";position:absolute;top:3px;left:3px;
-    width:18px;height:18px;border-radius:50%;
+    width:20px;height:20px;border-radius:50%;
     background:#fff;transition:transform .2s;
   }
   .switch input:checked + .track{background:var(--gold);}
-  .switch input:checked + .track::after{transform:translateX(18px);}
+  .switch input:checked + .track::after{transform:translateX(20px);}
   .switch input:focus-visible + .track{outline:2px solid var(--gold);outline-offset:2px;}
   .notify-status{font-size:11px;color:var(--warning);line-height:1.5;margin:4px 0 8px;}
   .notify-status:empty{display:none;}
-  .notify-foot{font-size:11px;color:var(--muted-2);line-height:1.5;margin-top:8px;}
+  .notify-foot{font-size:11px;color:var(--muted);line-height:1.5;margin:12px 2px 0;}
 
   .settings-toggle{
     display:flex;align-items:center;justify-content:center;gap:6px;
-    margin-top:14px;padding:8px;
-    font-size:12px;color:var(--muted);
+    width:100%;margin-top:14px;padding:12px 8px;
+    background:none;border:0;border-top:1px solid var(--panel-border);
+    font-size:13px;font-family:inherit;color:var(--muted);
     cursor:pointer;user-select:none;
-    border-top:1px solid var(--panel-border);
   }
   .settings-toggle:hover{color:var(--ink);}
-  .settings{
-    display:none;
-    margin-top:12px;
-    padding-top:4px;
+  .settings-toggle:focus-visible,.sheet-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  /* Баптаулар: телефонда төменнен шығатын парақ, үлкен экранда орталық диалог */
+  .sheet-backdrop{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(5,9,18,.62);
+    backdrop-filter:blur(3px);
+    opacity:0;visibility:hidden;
+    transition:opacity .25s ease, visibility 0s linear .25s;
   }
-  .settings.open{display:block;}
+  .sheet-backdrop.open{opacity:1;visibility:visible;transition-delay:0s;}
+
+  .settings{
+    position:fixed;left:50%;bottom:0;z-index:51;
+    width:100%;max-width:480px;
+    max-height:90vh;max-height:90dvh;
+    display:flex;flex-direction:column;
+    background:var(--bg-2);
+    border:1px solid var(--panel-border);
+    border-bottom:0;
+    border-radius:20px 20px 0 0;
+    box-shadow:0 -12px 40px rgba(0,0,0,.45);
+    transform:translate(-50%,100%);
+    visibility:hidden;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), visibility 0s linear .3s;
+  }
+  .settings.open{
+    transform:translate(-50%,0);
+    visibility:visible;
+    transition-delay:0s;
+  }
+  .sheet-head{
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 18px 12px 20px;
+    border-bottom:1px solid var(--panel-border);
+  }
+  .sheet-title{font-size:16px;font-weight:600;color:var(--ink-bright);}
+  .sheet-close{
+    width:34px;height:34px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--panel);color:var(--muted);
+    border:1px solid var(--panel-border);border-radius:50%;
+    font-size:14px;line-height:1;font-family:inherit;cursor:pointer;
+  }
+  .sheet-close:hover{background:var(--panel-hover);color:var(--ink);}
+  .sheet-body{
+    flex:1 1 auto;
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    padding:14px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  .group{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:14px;
+    padding:14px 14px 6px;
+    margin-bottom:12px;
+  }
+  .group:last-child{margin-bottom:0;padding-bottom:14px;}
   .field{margin-bottom:12px;}
-  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
   select{
     width:100%;
-    background:#0D1526;
+    -webkit-appearance:none;appearance:none;
+    background-color:#0D1526;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237C8699' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
     color:var(--ink);
     border:1px solid var(--panel-border);
-    border-radius:8px;
-    padding:8px 10px;
-    font-size:13px;
+    border-radius:10px;
+    padding:11px 34px 11px 12px;
+    font-size:16px; /* iOS-та үлкейтіп жібермеуі үшін */
     font-family:inherit;
+    cursor:pointer;
+  }
+  select:focus-visible{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--border-gold);}
+  .btn.wide{width:100%;padding:11px 12px;font-size:14px;border-radius:10px;}
+
+  @media (min-width:600px){
+    .settings{
+      bottom:auto;top:50%;
+      border:1px solid var(--panel-border);
+      border-radius:20px;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+      transform:translate(-50%,-46%);
+      opacity:0;
+      transition:transform .25s ease, opacity .25s ease, visibility 0s linear .25s;
+    }
+    .settings.open{transform:translate(-50%,-50%);opacity:1;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .settings,.sheet-backdrop{transition-duration:0s !important;}
   }
 
 .sky-icon{
@@ -505,42 +581,55 @@ button {
 
     <div class="note" id="noteText">ҚМДБ ресми кестесімен калибрленген (Алматы/Астана деректерімен тексерілді).<br>Дәлдігі шамамен ±1-2 минут.</div>
 
-    <div class="settings-toggle" id="settingsToggle">⚙ Баптаулар</div>
-    <div class="settings" id="settingsPanel">
-      <div class="field">
-        <label for="citySelect" id="cityFieldLabel">Қала</label>
-        <select id="citySelect"></select>
-      </div>
-      <div class="field">
-        <label for="methodSelect" id="methodFieldLabel">Есептеу әдісі</label>
-        <select id="methodSelect"></select>
-      </div>
-      <div class="field">
-        <label for="madhabSelect" id="madhabFieldLabel">Екінті уақыты (мазһаб)</label>
-        <select id="madhabSelect">
-          <option value="2" id="hanafiOpt">Ханафи</option>
-          <option value="1" id="shafiiOpt">Шафии / Малики / Ханбали</option>
-        </select>
+    <button type="button" class="settings-toggle" id="settingsToggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="settingsPanel">⚙ Баптаулар</button>
+  </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="settings" id="settingsPanel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="sheet-head">
+      <span class="sheet-title" id="settingsTitle">Баптаулар</span>
+      <button type="button" class="sheet-close" id="settingsClose" aria-label="Жабу">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="group">
+        <div class="section-title" id="locSectionTitle">ОРЫН ЖӘНЕ ЕСЕПТЕУ</div>
+        <div class="field">
+          <label for="citySelect" id="cityFieldLabel">Қала</label>
+          <select id="citySelect"></select>
+        </div>
+        <div class="field">
+          <label for="methodSelect" id="methodFieldLabel">Есептеу әдісі</label>
+          <select id="methodSelect"></select>
+        </div>
+        <div class="field">
+          <label for="madhabSelect" id="madhabFieldLabel">Екінті уақыты (мазһаб)</label>
+          <select id="madhabSelect">
+            <option value="2" id="hanafiOpt">Ханафи</option>
+            <option value="1" id="shafiiOpt">Шафии / Малики / Ханбали</option>
+          </select>
+        </div>
       </div>
 
-      <div class="section-title" id="notifSectionTitle">ХАБАРЛАМАЛАР</div>
-      <label class="switch-row">
-        <span class="sw-text">
-          <span class="sw-title" id="notifySwTitle">Хабарлама жіберу</span>
-          <span class="sw-sub" id="notifySwSub">Намазға 10 және 5 минут қалғанда және уақыты кіргенде</span>
-        </span>
-        <span class="switch"><input type="checkbox" id="notifyToggle"><span class="track"></span></span>
-      </label>
-      <label class="switch-row">
-        <span class="sw-text">
-          <span class="sw-title" id="soundSwTitle">Азан дауысы</span>
-          <span class="sw-sub" id="soundSwSub">Намаз уақыты кіргенде ойнайды</span>
-        </span>
-        <span class="switch"><input type="checkbox" id="soundToggle"><span class="track"></span></span>
-      </label>
-      <div class="notify-status" id="notifyStatus"></div>
-      <button type="button" class="btn" id="testBtn">Сынау</button>
-      <div class="notify-foot" id="notifyFoot">Хабарлама мен азан бет браузерде ашық тұрғанда ғана жұмыс істейді.</div>
+      <div class="group">
+        <div class="section-title" id="notifSectionTitle">ХАБАРЛАМАЛАР</div>
+        <label class="switch-row">
+          <span class="sw-text">
+            <span class="sw-title" id="notifySwTitle">Хабарлама жіберу</span>
+            <span class="sw-sub" id="notifySwSub">Намазға 10 және 5 минут қалғанда және уақыты кіргенде</span>
+          </span>
+          <span class="switch"><input type="checkbox" id="notifyToggle"><span class="track"></span></span>
+        </label>
+        <label class="switch-row">
+          <span class="sw-text">
+            <span class="sw-title" id="soundSwTitle">Азан дауысы</span>
+            <span class="sw-sub" id="soundSwSub">Намаз уақыты кіргенде ойнайды</span>
+          </span>
+          <span class="switch"><input type="checkbox" id="soundToggle"><span class="track"></span></span>
+        </label>
+        <div class="notify-status" id="notifyStatus"></div>
+        <button type="button" class="btn wide" id="testBtn">Сынау</button>
+        <div class="notify-foot" id="notifyFoot">Хабарлама мен азан бет браузерде ашық тұрғанда ғана жұмыс істейді.</div>
+      </div>
     </div>
   </div>
 
@@ -586,6 +675,8 @@ const I18N = {
     cityLabel: name => `${name} қаласы`,
     jumuahMubarak: 'Жұма қабыл болсын!',
     settingsLabel: 'Баптаулар',
+    locSectionTitle: 'ОРЫН ЖӘНЕ ЕСЕПТЕУ',
+    closeLabel: 'Жабу',
     cityFieldLabel: 'Қала',
     methodFieldLabel: 'Есептеу әдісі',
     madhabFieldLabel: 'Екінті уақыты (мазһаб)',
@@ -624,6 +715,8 @@ const I18N = {
     cityLabel: name => name,
     jumuahMubarak: "Jumu'ah Mubarak!",
     settingsLabel: 'Settings',
+    locSectionTitle: 'LOCATION & CALCULATION',
+    closeLabel: 'Close',
     cityFieldLabel: 'City',
     methodFieldLabel: 'Calculation method',
     madhabFieldLabel: 'Asr time (madhab)',
@@ -662,6 +755,8 @@ const I18N = {
     cityLabel: name => `г. ${name}`,
     jumuahMubarak: 'Джума мубарак!',
     settingsLabel: 'Настройки',
+    locSectionTitle: 'МЕСТО И РАСЧЁТ',
+    closeLabel: 'Закрыть',
     cityFieldLabel: 'Город',
     methodFieldLabel: 'Метод расчёта',
     madhabFieldLabel: 'Время Аср (мазхаб)',
@@ -792,6 +887,22 @@ const listEl = document.getElementById('list');
 const greetingEl = document.getElementById('greeting');
 const settingsToggle = document.getElementById('settingsToggle');
 const settingsPanel = document.getElementById('settingsPanel');
+const sheetBackdrop = document.getElementById('sheetBackdrop');
+const settingsClose = document.getElementById('settingsClose');
+const settingsTitleEl = document.getElementById('settingsTitle');
+const locSectionTitle = document.getElementById('locSectionTitle');
+
+// Таңдалған қала/әдіс/мазһаб браузерде сақталады
+const PREFS_KEY = 'namaz-prefs';
+let prefs = {city:0, method:0, madhab:'2'};
+try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')); } catch(e){}
+if (!CITIES[prefs.city]) prefs.city = 0;
+if (!METHODS[prefs.method]) prefs.method = 0;
+if (prefs.madhab !== '1' && prefs.madhab !== '2') prefs.madhab = '2';
+function savePrefs(){
+  prefs = {city: +citySelect.value, method: +methodSelect.value, madhab: madhabSelect.value};
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch(e){}
+}
 const hanafiOpt = document.getElementById('hanafiOpt');
 const shafiiOpt = document.getElementById('shafiiOpt');
 const cityFieldLabel = document.getElementById('cityFieldLabel');
@@ -813,7 +924,7 @@ function populateSelects(){
     o.value = i; o.textContent = cityName(c);
     citySelect.appendChild(o);
   });
-  citySelect.value = cityVal !== '' ? cityVal : 0;
+  citySelect.value = cityVal !== '' ? cityVal : prefs.city;
 
   const methodVal = methodSelect.value;
   methodSelect.innerHTML = '';
@@ -822,14 +933,30 @@ function populateSelects(){
     o.value = i; o.textContent = methodName(m);
     methodSelect.appendChild(o);
   });
-  methodSelect.value = methodVal !== '' ? methodVal : 0;
+  methodSelect.value = methodVal !== '' ? methodVal : prefs.method;
 }
 
-settingsToggle.addEventListener('click', ()=>{
-  settingsPanel.classList.toggle('open');
-});
+function openSettings(){
+  settingsPanel.classList.add('open');
+  sheetBackdrop.classList.add('open');
+  settingsToggle.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+  setTimeout(()=>{ try { settingsClose.focus({preventScroll:true}); } catch(e){} }, 50);
+}
+function closeSettings(){
+  if (!settingsPanel.classList.contains('open')) return;
+  settingsPanel.classList.remove('open');
+  sheetBackdrop.classList.remove('open');
+  settingsToggle.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+  try { settingsToggle.focus({preventScroll:true}); } catch(e){}
+}
+settingsToggle.addEventListener('click', openSettings);
+settingsClose.addEventListener('click', closeSettings);
+sheetBackdrop.addEventListener('click', closeSettings);
+document.addEventListener('keydown', e=>{ if (e.key === 'Escape') closeSettings(); });
 [citySelect, methodSelect, madhabSelect].forEach(el=>{
-  el.addEventListener('change', renderAll);
+  el.addEventListener('change', ()=>{ renderAll(); savePrefs(); });
 });
 document.querySelectorAll('.lang-btn').forEach(btn=>{
   btn.addEventListener('click', ()=> setLang(btn.dataset.lang));
@@ -1175,6 +1302,9 @@ function applyStaticText(){
   document.documentElement.lang = lang;
   greetingEl.textContent = t('jumuahMubarak');
   settingsToggle.textContent = '⚙ ' + t('settingsLabel');
+  settingsTitleEl.textContent = t('settingsLabel');
+  locSectionTitle.textContent = t('locSectionTitle');
+  settingsClose.setAttribute('aria-label', t('closeLabel'));
   cityFieldLabel.textContent = t('cityFieldLabel');
   methodFieldLabel.textContent = t('methodFieldLabel');
   madhabFieldLabel.textContent = t('madhabFieldLabel');
@@ -1203,7 +1333,7 @@ function setLang(newLang){
   renderAll();
 }
 
-madhabSelect.value = "2"; // Ханафи
+madhabSelect.value = prefs.madhab; // әдепкі: Ханафи
 setLang(lang);
 tick();
 setInterval(tick, 1000);
