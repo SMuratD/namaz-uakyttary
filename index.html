@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Намазға уақыт болды</title>
+<meta name="theme-color" content="#0A1120" id="themeColorMeta">
+<script>try{var _b=localStorage.getItem('namaz-bg');if(_b)document.documentElement.setAttribute('data-bg',_b);}catch(e){}</script>
 <style>
   :root{
     /* Background */
@@ -95,6 +97,65 @@
     --overlay: rgba(0,0,0,0.55);
     --blur: blur(12px);
   }
+  /* ---------- Фон тақырыптары ---------- */
+  :root[data-bg="emerald"]{--bg-0:#06140F;--bg-1:#0C2219;--bg-2:#12301F;--bg-3:#19402F;}
+  :root[data-bg="plum"]{--bg-0:#130A1E;--bg-1:#1E1230;--bg-2:#28193F;--bg-3:#33214F;}
+  :root[data-bg="graphite"]{--bg-0:#0B0B0D;--bg-1:#151518;--bg-2:#1D1D22;--bg-3:#26262C;}
+  :root[data-bg="bordeaux"]{--bg-0:#1A0A0E;--bg-1:#2A1118;--bg-2:#381820;--bg-3:#46202A;}
+  :root[data-bg="light"]{
+    --bg-0:#F1EBDD;--bg-1:#FBF8F1;--bg-2:#FFFFFF;--bg-3:#EFE9DB;
+    --ink:#2A2418;--ink-bright:#14110A;--muted:#6E6858;--muted-2:#948D79;
+    --panel:rgba(0,0,0,0.035);--panel-hover:rgba(0,0,0,0.06);--panel-active:rgba(168,128,31,0.10);
+    --panel-border:rgba(0,0,0,0.10);--border:rgba(0,0,0,0.09);--border-light:rgba(0,0,0,0.14);
+    --gold:#A8801F;--gold-soft:rgba(168,128,31,0.14);
+    --shadow-sm:0 2px 8px rgba(0,0,0,0.08);--shadow-md:0 8px 24px rgba(0,0,0,0.12);--shadow-lg:0 16px 50px rgba(0,0,0,0.18);
+  }
+  :root[data-bg="light"] .row.next .time{color:var(--ink-bright);}
+  :root[data-bg="light"] select{background-color:#fff;}
+  :root[data-bg="light"] .switch input:not(:checked) + .track{background:rgba(0,0,0,0.18);}
+  :root[data-bg="light"] .settings{box-shadow:0 -12px 40px rgba(0,0,0,.18);}
+  :root[data-bg="light"] .sheet-backdrop{background:rgba(20,16,8,.40);}
+  body,.settings,.card{transition:background .35s ease;}
+
+  /* ---------- Исламдық сурет фондары ---------- */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background-image:var(--art,none);background-size:cover;background-position:center bottom;background-repeat:no-repeat;
+    opacity:0;transition:opacity .5s ease;
+  }
+  :root[data-art] body::before{opacity:1;}
+  :root[data-art] .card{background:rgba(8,14,28,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+  :root[data-art][data-bg="light"] .card{background:rgba(255,252,244,.82);}
+  .about-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;font-size:13px;border-top:1px solid var(--panel-border);}
+  .about-row:first-of-type{border-top:0;}
+  .about-row .k{color:var(--muted);}
+  .about-row .v{color:var(--ink);text-align:right;font-weight:500;}
+  .about-foot{margin-top:8px;font-size:11px;color:var(--muted-2);line-height:1.5;}
+  .bg-swatches.four{grid-template-columns:repeat(4,1fr);}
+  .bg-opt .sw.none{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px;background:transparent;}
+  .bg-opt.active .sw.none{color:transparent;}
+  .bg-opt.active .sw.none::after{color:var(--gold);text-shadow:none;}
+  .bg-opt .sw.art{background-size:cover;background-position:center bottom;}
+  .bg-swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 8px;padding:4px 0 6px;}
+  .bg-opt{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:none;border:0;padding:0;cursor:pointer;color:var(--muted);font-size:12px;font-family:inherit;
+  }
+  .bg-opt .sw{
+    width:48px;height:48px;border-radius:50%;
+    border:2px solid var(--panel-border);
+    box-shadow:var(--shadow-sm);
+    position:relative;
+  }
+  .bg-opt:hover .sw{border-color:var(--border-gold);}
+  .bg-opt.active{color:var(--gold);font-weight:600;}
+  .bg-opt.active .sw{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);}
+  .bg-opt.active .sw::after{
+    content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:18px;text-shadow:0 1px 3px rgba(0,0,0,.6);
+  }
+  .bg-opt:focus-visible .sw{outline:2px solid var(--gold);outline-offset:2px;}
+
   *{box-sizing:border-box;}
   body{
     margin:0;
@@ -316,6 +377,12 @@ button {
     transform .25s ease,
     border .25s ease;
 }
+  .row{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;}
+  .row:hover{background:rgba(201,164,76,.07);}
+  .row.selected{border:1px solid rgba(201,164,76,.45);background:rgba(201,164,76,.10);}
+  .row.selected .name{color:var(--gold);}
+  .row.selected .dot{background:var(--gold);}
+  .row .left{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums;}
   .name{font-size:15px;}
   .row.info .name{color:var(--muted);font-size:13px;}
   .time{
@@ -592,6 +659,16 @@ button {
     </div>
     <div class="sheet-body">
       <div class="group">
+        <div class="section-title" id="bgSectionTitle">ФОН</div>
+        <div class="bg-swatches" id="bgSwatches" role="radiogroup"></div>
+      </div>
+
+      <div class="group">
+        <div class="section-title" id="artSectionTitle">СУРЕТ</div>
+        <div class="bg-swatches four" id="artSwatches" role="radiogroup"></div>
+      </div>
+
+      <div class="group">
         <div class="section-title" id="locSectionTitle">ОРЫН ЖӘНЕ ЕСЕПТЕУ</div>
         <div class="field">
           <label for="citySelect" id="cityFieldLabel">Қала</label>
@@ -629,6 +706,15 @@ button {
         <div class="notify-status" id="notifyStatus"></div>
         <button type="button" class="btn wide" id="testBtn">Сынау</button>
         <div class="notify-foot" id="notifyFoot">Хабарлама мен азан бет браузерде ашық тұрғанда ғана жұмыс істейді.</div>
+      </div>
+
+      <div class="group">
+        <div class="section-title" id="aboutSectionTitle">ТУРАЛЫ</div>
+        <div class="about-row"><span class="k" id="aboutVersionK">Нұсқа</span><span class="v">2.3</span></div>
+        <div class="about-row"><span class="k" id="aboutEngK">AI инженер</span><span class="v" id="aboutEngV">Sultan Muratuly</span></div>
+        <div class="about-row"><span class="k" id="aboutModelK">Жасаған модель</span><span class="v">Claude Sonnet 5.5</span></div>
+        <div class="about-row"><span class="k" id="aboutMadeK">Бірге жасалған</span><span class="v">Anthropic · Claude</span></div>
+        <div class="about-foot" id="aboutFoot">Бұл қолданба AI инженер мен жасанды интеллект Claude бірлесе әзірленді.</div>
       </div>
     </div>
   </div>
@@ -676,6 +762,16 @@ const I18N = {
     jumuahMubarak: 'Жұма қабыл болсын!',
     settingsLabel: 'Баптаулар',
     locSectionTitle: 'ОРЫН ЖӘНЕ ЕСЕПТЕУ',
+    bgSectionTitle: 'ФОН',
+    bgNames: {night:'Түнгі көк', emerald:'Жасыл', plum:'Күлгін', graphite:'Графит', bordeaux:'Қызыл', light:'Ашық'},
+    artSectionTitle: 'СУРЕТ',
+    artNames: {none:'Жоқ', mosque:'Мешіт', kaaba:'Қағба', pattern:'Өрнек'},
+    aboutSectionTitle: 'ТУРАЛЫ',
+    aboutVersion: 'Нұсқа',
+    aboutModel: 'Жасаған модель',
+    aboutMade: 'Бірге жасалған',
+    aboutEng: 'AI инженер',
+    aboutFoot: 'Бұл қолданба AI инженер мен жасанды интеллект Claude бірлесе әзірленді.',
     closeLabel: 'Жабу',
     cityFieldLabel: 'Қала',
     methodFieldLabel: 'Есептеу әдісі',
@@ -693,6 +789,7 @@ const I18N = {
     noteLine2: 'Дәлдігі шамамен ±1-2 минут.',
     calculating: 'Есептелуде…',
     nextPrayerLabel: (name, time) => `Келесі намаз: ${name}, ${time}`,
+    selectedPrayerLabel: (name, time, tom) => `Таңдалған намаз: ${name}, ${time}${tom ? ' (ертең)' : ''}`,
     remainingH: (h,m) => `${h} сағ ${m} мин қалды`,
     remainingM: m => `${m} мин қалды`,
     remainingS: s => `${s} сек қалды`,
@@ -716,6 +813,16 @@ const I18N = {
     jumuahMubarak: "Jumu'ah Mubarak!",
     settingsLabel: 'Settings',
     locSectionTitle: 'LOCATION & CALCULATION',
+    bgSectionTitle: 'BACKGROUND',
+    bgNames: {night:'Night blue', emerald:'Emerald', plum:'Plum', graphite:'Graphite', bordeaux:'Bordeaux', light:'Light'},
+    artSectionTitle: 'PICTURE',
+    artNames: {none:'None', mosque:'Mosque', kaaba:'Kaaba', pattern:'Pattern'},
+    aboutSectionTitle: 'ABOUT',
+    aboutVersion: 'Version',
+    aboutModel: 'Model',
+    aboutMade: 'Made with',
+    aboutEng: 'AI engineer',
+    aboutFoot: 'This app was built by an AI engineer together with the AI assistant Claude.',
     closeLabel: 'Close',
     cityFieldLabel: 'City',
     methodFieldLabel: 'Calculation method',
@@ -733,6 +840,7 @@ const I18N = {
     noteLine2: 'Accuracy is about ±1-2 minutes.',
     calculating: 'Calculating…',
     nextPrayerLabel: (name, time) => `Next prayer: ${name}, ${time}`,
+    selectedPrayerLabel: (name, time, tom) => `Selected prayer: ${name}, ${time}${tom ? ' (tomorrow)' : ''}`,
     remainingH: (h,m) => `${h}h ${m}m left`,
     remainingM: m => `${m} min left`,
     remainingS: s => `${s} sec left`,
@@ -756,6 +864,16 @@ const I18N = {
     jumuahMubarak: 'Джума мубарак!',
     settingsLabel: 'Настройки',
     locSectionTitle: 'МЕСТО И РАСЧЁТ',
+    bgSectionTitle: 'ФОН',
+    bgNames: {night:'Ночной синий', emerald:'Изумруд', plum:'Слива', graphite:'Графит', bordeaux:'Бордо', light:'Светлый'},
+    artSectionTitle: 'КАРТИНКА',
+    artNames: {none:'Нет', mosque:'Мечеть', kaaba:'Кааба', pattern:'Узор'},
+    aboutSectionTitle: 'О ПРИЛОЖЕНИИ',
+    aboutVersion: 'Версия',
+    aboutModel: 'Модель',
+    aboutMade: 'Создано с помощью',
+    aboutEng: 'AI-инженер',
+    aboutFoot: 'Приложение создано AI-инженером совместно с ИИ-ассистентом Claude.',
     closeLabel: 'Закрыть',
     cityFieldLabel: 'Город',
     methodFieldLabel: 'Метод расчёта',
@@ -773,6 +891,7 @@ const I18N = {
     noteLine2: 'Точность около ±1-2 минут.',
     calculating: 'Вычисляется…',
     nextPrayerLabel: (name, time) => `Следующий намаз: ${name}, ${time}`,
+    selectedPrayerLabel: (name, time, tom) => `Выбранный намаз: ${name}, ${time}${tom ? ' (завтра)' : ''}`,
     remainingH: (h,m) => `Осталось ${h} ч ${m} мин`,
     remainingM: m => `Осталось ${m} мин`,
     remainingS: s => `Осталось ${s} сек`,
@@ -978,6 +1097,8 @@ function fmtClock(d){
 
 let todayTimes = null;
 let tomorrowFajr = null;
+let tomorrowTimes = null;
+let selectedKey = null; // null = автоматты (келесі намаз); әйтпесе таңдалған намаз кілті
 let jumaTime = null; // Жұма намазының нақты уақыты (тек жұмада, деректер бар қалада)
 
 function renderAll(){
@@ -998,6 +1119,7 @@ function renderAll(){
   const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
   const tTimes = computeTimes(tomorrow, city.lat, city.lon, method.fajr, method.isha, asrFactor, method.ihtiyat);
   tomorrowFajr = tTimes.fajr;
+  tomorrowTimes = tTimes;
 
   cityLabel.textContent = t('cityLabel')(cityName(city));
   dateLabel.textContent = `${t('weekdays')[now.getDay()]}, ${now.getDate()} ${t('months')[now.getMonth()]}`;
@@ -1007,6 +1129,7 @@ function renderAll(){
 
 let nextPrayerName = null;
 let nextPrayerTime = null;
+let selectedTarget = null; // {when, tom} — таңдалған намаз болса
 
 // "Келесі намаз" анықтауға арналған уақыт: бесінге Жұма күні нақты Жұма уақыты бар болса, сол қолданылады.
 function effectiveTime(key){
@@ -1027,12 +1150,23 @@ function renderList(){
   ROW_KEYS.forEach(row=>{
     const time = todayTimes[row.key];
     const div = document.createElement('div');
-    div.className = 'row' + (row.info ? ' info' : '') + (time < now ? ' past' : '') + (row.key===nextKey ? ' next' : '');
-    div.innerHTML = `<span class="dot"></span><span class="name">${names[row.key]}</span><span class="time">${fmtTime(time)}</span>`;
+    div.className = 'row' + (row.info ? ' info' : '') + (time < now ? ' past' : '') + (row.key===nextKey ? ' next' : '') + (row.key===selectedKey ? ' selected' : '');
+    div.dataset.key = row.key;
+    div.setAttribute('role','button');
+    div.tabIndex = 0;
+    div.innerHTML = `<span class="dot"></span><span class="name">${names[row.key]}<span class="left" data-left="${row.key}"></span></span><span class="time">${fmtTime(time)}</span>`;
     listEl.appendChild(div);
   });
 
-  if (nextKey){
+  selectedTarget = null;
+  if (selectedKey){
+    let when = effectiveTime(selectedKey);
+    let tom = false;
+    if (when <= now){ when = tomorrowTimes[selectedKey]; tom = true; }
+    selectedTarget = {when, tom};
+    nextPrayerName = (selectedKey === 'dhuhr' && isFriday(now)) ? t('fridayPrayerFull') : names[selectedKey];
+    nextPrayerTime = when;
+  } else if (nextKey){
     nextPrayerName = (nextKey === 'dhuhr' && isFriday(now)) ? t('fridayPrayerFull') : names[nextKey];
     nextPrayerTime = effectiveTime(nextKey);
   } else {
@@ -1052,16 +1186,35 @@ function updateCountdown(){
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
 
-  nextLabelEl.textContent = t('nextPrayerLabel')(nextPrayerName, fmtTime(nextPrayerTime));
+  nextLabelEl.textContent = selectedTarget
+    ? t('selectedPrayerLabel')(nextPrayerName, fmtTime(nextPrayerTime), selectedTarget.tom)
+    : t('nextPrayerLabel')(nextPrayerName, fmtTime(nextPrayerTime));
 
-  if (h > 0){
-    nextSubEl.textContent = t('remainingH')(h, m);
-  } else if (m > 0){
-    nextSubEl.textContent = t('remainingM')(m);
-  } else {
-    nextSubEl.textContent = t('remainingS')(s);
+  const fmtLeft = (h,m,s)=> h > 0 ? t('remainingH')(h, m) : (m > 0 ? t('remainingM')(m) : t('remainingS')(s));
+  nextSubEl.textContent = fmtLeft(h, m, s);
+
+  // Таңдалған жолдың астында да қалған уақытты көрсету
+  listEl.querySelectorAll('.left').forEach(el=>{ el.textContent = ''; });
+  if (selectedTarget){
+    const el = listEl.querySelector('[data-left="'+selectedKey+'"]');
+    if (el) el.textContent = fmtLeft(h, m, s);
   }
 }
+
+// Намаз жолын басу: уақытын көрсету; қайта басу — келесі намазға оралу
+function toggleSelect(key){
+  selectedKey = (selectedKey === key) ? null : key;
+  renderList();
+}
+listEl.addEventListener('click', e=>{
+  const row = e.target.closest('.row');
+  if (row) toggleSelect(row.dataset.key);
+});
+listEl.addEventListener('keydown', e=>{
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const row = e.target.closest('.row');
+  if (row){ e.preventDefault(); toggleSelect(row.dataset.key); }
+});
 
 function tick(){
   clockEl.textContent = fmtClock(new Date());
@@ -1296,6 +1449,188 @@ testBtn.addEventListener('click', ()=>{
   if (settings.sound) playAzan();
 });
 
+// ----- Фон тақырыбы -----
+const BG_KEY = 'namaz-bg';
+const BGS = [
+  {key:'night',    a:'#0A1120', b:'#1C2B45', meta:'#0A1120'},
+  {key:'emerald',  a:'#06140F', b:'#19402F', meta:'#06140F'},
+  {key:'plum',     a:'#130A1E', b:'#33214F', meta:'#130A1E'},
+  {key:'graphite', a:'#0B0B0D', b:'#26262C', meta:'#0B0B0D'},
+  {key:'bordeaux', a:'#1A0A0E', b:'#46202A', meta:'#1A0A0E'},
+  {key:'light',    a:'#F1EBDD', b:'#FFFFFF', meta:'#F1EBDD'},
+];
+let bgKey = 'night';
+try { const sb = localStorage.getItem(BG_KEY); if (BGS.some(x=>x.key===sb)) bgKey = sb; } catch(e){}
+const bgSwatchesEl = document.getElementById('bgSwatches');
+const bgSectionTitleEl = document.getElementById('bgSectionTitle');
+const themeColorMeta = document.getElementById('themeColorMeta');
+
+function applyBg(){
+  document.documentElement.setAttribute('data-bg', bgKey);
+  const cur = BGS.find(x=>x.key===bgKey);
+  if (cur && themeColorMeta) themeColorMeta.setAttribute('content', cur.meta);
+}
+function renderBgSwatches(){
+  const names = t('bgNames');
+  bgSectionTitleEl.textContent = t('bgSectionTitle');
+  bgSwatchesEl.innerHTML = '';
+  BGS.forEach(b=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bg-opt' + (b.key===bgKey ? ' active' : '');
+    btn.dataset.bg = b.key;
+    btn.setAttribute('role','radio');
+    btn.setAttribute('aria-checked', b.key===bgKey ? 'true' : 'false');
+    btn.innerHTML = `<span class="sw" style="background:linear-gradient(145deg,${b.a},${b.b})"></span><span>${names[b.key]}</span>`;
+    bgSwatchesEl.appendChild(btn);
+  });
+}
+bgSwatchesEl.addEventListener('click', e=>{
+  const btn = e.target.closest('.bg-opt');
+  if (!btn) return;
+  bgKey = btn.dataset.bg;
+  try { localStorage.setItem(BG_KEY, bgKey); } catch(err){}
+  applyBg();
+  renderBgSwatches();
+});
+applyBg();
+
+// ----- Исламдық сурет фондары (SVG, сыртқы файл керек емес) -----
+const ART_KEY = 'namaz-art';
+function svgWrap(inner){
+  return `<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000' viewBox='0 0 1000 1000'>${inner}</svg>`;
+}
+function skyGrad(id,c0,c1,c2){
+  return `<linearGradient id='${id}' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${c0}'/><stop offset='.6' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/></linearGradient>`;
+}
+function starField(n, seed, ymax){
+  let st = seed, o = '';
+  const r = ()=> (st = (st*16807) % 2147483647) / 2147483647;
+  for (let i=0;i<n;i++){
+    o += `<circle cx='${(r()*1000)|0}' cy='${(r()*ymax)|0}' r='${(r()*1.6+.5).toFixed(1)}' fill='#fff' opacity='${(r()*.6+.3).toFixed(2)}'/>`;
+  }
+  return o;
+}
+function minaret(x, top){
+  const h = 1010 - top;
+  return `<rect x='${x-13}' y='${top}' width='26' height='${h}'/><rect x='${x-23}' y='${top+90}' width='46' height='10'/>`
+       + `<path d='M${x-13} ${top}L${x} ${top-70}L${x+13} ${top}Z'/><rect x='${x-1.5}' y='${top-98}' width='3' height='30'/>`
+       + `<rect x='${x-3}' y='${top+30}' width='6' height='18' fill='#f0c36a' opacity='.85'/>`;
+}
+function mosqueSVG(){
+  let win = '';
+  for (let x=270; x<=690; x+=60) win += `<path transform='translate(${x} 902)' d='M0 0v-34a13 13 0 0 1 26 0v34z'/>`;
+  return svgWrap(
+    `<defs>${skyGrad('s','#070d1f','#16264a','#c08a4c')}
+     <radialGradient id='g' cx='.5' cy='.8' r='.55'><stop offset='0' stop-color='#f0c36a' stop-opacity='.55'/><stop offset='1' stop-color='#f0c36a' stop-opacity='0'/></radialGradient>
+     <mask id='m'><rect width='1000' height='1000' fill='#fff'/><circle cx='826' cy='140' r='40' fill='#000'/></mask></defs>
+     <rect width='1000' height='1000' fill='url(#s)'/><rect width='1000' height='1000' fill='url(#g)'/>
+     ${starField(70, 7, 520)}
+     <circle cx='800' cy='150' r='48' fill='#ecc766' mask='url(#m)'/>
+     <g fill='#050914'>
+       <path d='M360 770A140 130 0 0 1 640 770Z'/><rect x='498' y='598' width='4' height='46'/><circle cx='500' cy='594' r='7'/>
+       <path d='M250 812A50 46 0 0 1 350 812Z'/><path d='M650 812A50 46 0 0 1 750 812Z'/>
+       <rect x='360' y='765' width='280' height='45'/><rect x='240' y='805' width='520' height='205'/>
+       ${minaret(150, 560)}${minaret(850, 560)}${minaret(55, 720)}${minaret(945, 720)}
+     </g>
+     <g fill='#f0c36a' opacity='.85'>${win}</g>`);
+}
+function kaabaSVG(){
+  let pil = '';
+  for (let i=0;i<90;i++){
+    const a = i/90*Math.PI*2;
+    pil += `<circle cx='${(540+400*Math.cos(a)).toFixed(0)}' cy='${(930+36*Math.sin(a)).toFixed(0)}' r='3.2' fill='#e9e2cf' opacity='.5'/>`;
+  }
+  return svgWrap(
+    `<defs>${skyGrad('s','#05070f','#0f1a36','#2a3a63')}
+     <radialGradient id='h' cx='.54' cy='.68' r='.5'><stop offset='0' stop-color='#f0c36a' stop-opacity='.5'/><stop offset='1' stop-color='#f0c36a' stop-opacity='0'/></radialGradient>
+     <linearGradient id='d' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#f6d98a'/><stop offset='1' stop-color='#b98a2e'/></linearGradient></defs>
+     <rect width='1000' height='1000' fill='url(#s)'/><rect width='1000' height='1000' fill='url(#h)'/>
+     ${starField(80, 11, 560)}
+     <g fill='#0a1226'>${minaret(110, 520)}${minaret(910, 520)}</g>
+     <rect y='885' width='1000' height='130' fill='#070b17'/>
+     <g fill='none' stroke='#f0c36a' stroke-opacity='.28'><ellipse cx='540' cy='930' rx='440' ry='44'/><ellipse cx='540' cy='930' rx='360' ry='30'/><ellipse cx='540' cy='930' rx='280' ry='20'/></g>
+     ${pil}
+     <path d='M380 600L620 600L700 570L460 570Z' fill='#16181f'/>
+     <path d='M620 600L700 570L700 850L620 880Z' fill='#06070b'/>
+     <rect x='380' y='600' width='240' height='280' fill='#0d0f15'/>
+     <path d='M620 650L700 620L700 660L620 690Z' fill='#d9a93e'/>
+     <rect x='380' y='650' width='240' height='40' fill='#d9a93e'/>
+     <line x1='388' y1='670' x2='612' y2='670' stroke='#7a5a14' stroke-width='3' stroke-dasharray='10 7'/>
+     <rect x='512' y='735' width='56' height='145' rx='4' fill='url(#d)'/>
+     <rect x='520' y='745' width='40' height='125' rx='3' fill='none' stroke='#7a5a14' stroke-width='2'/>`);
+}
+function patternSVG(){
+  return svgWrap(
+    `<defs><pattern id='p' width='120' height='120' patternUnits='userSpaceOnUse'>
+      <g fill='none' stroke='#d9b25a' stroke-opacity='.34' stroke-width='1.4'>
+        <rect x='30' y='30' width='60' height='60'/><rect x='30' y='30' width='60' height='60' transform='rotate(45 60 60)'/>
+        <circle cx='60' cy='60' r='16'/><path d='M0 60h30M90 60h30M60 0v30M60 90v30'/>
+        <rect x='-8' y='-8' width='16' height='16' transform='rotate(45)'/>
+        <rect x='-8' y='-8' width='16' height='16' transform='translate(120 0) rotate(45)'/>
+        <rect x='-8' y='-8' width='16' height='16' transform='translate(0 120) rotate(45)'/>
+        <rect x='-8' y='-8' width='16' height='16' transform='translate(120 120) rotate(45)'/>
+      </g></pattern>
+      <radialGradient id='v' cx='.5' cy='.5' r='.75'><stop offset='0' stop-color='#123246'/><stop offset='1' stop-color='#050c18'/></radialGradient></defs>
+     <rect width='1000' height='1000' fill='url(#v)'/><rect width='1000' height='1000' fill='url(#p)'/>`);
+}
+const ARTS = [
+  {key:'none'},
+  {key:'mosque',  svg: mosqueSVG},
+  {key:'kaaba',   svg: kaabaSVG},
+  {key:'pattern', svg: patternSVG},
+];
+const ART_URL = {};
+function artUrl(key){
+  if (!ART_URL[key]){
+    const a = ARTS.find(x=>x.key===key);
+    ART_URL[key] = `url("data:image/svg+xml,${encodeURIComponent(a.svg())}")`;
+  }
+  return ART_URL[key];
+}
+let artKey = 'none';
+try { const sa = localStorage.getItem(ART_KEY); if (ARTS.some(x=>x.key===sa)) artKey = sa; } catch(e){}
+const artSwatchesEl = document.getElementById('artSwatches');
+const artSectionTitleEl = document.getElementById('artSectionTitle');
+
+function applyArt(){
+  const root = document.documentElement;
+  if (artKey === 'none'){
+    root.removeAttribute('data-art');
+    root.style.removeProperty('--art');
+  } else {
+    root.style.setProperty('--art', artUrl(artKey));
+    root.setAttribute('data-art', artKey);
+  }
+}
+function renderArtSwatches(){
+  const names = t('artNames');
+  artSectionTitleEl.textContent = t('artSectionTitle');
+  artSwatchesEl.innerHTML = '';
+  ARTS.forEach(a=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'bg-opt' + (a.key===artKey ? ' active' : '');
+    btn.dataset.art = a.key;
+    btn.setAttribute('role','radio');
+    btn.setAttribute('aria-checked', a.key===artKey ? 'true' : 'false');
+    const sw = a.key === 'none'
+      ? `<span class="sw none">∅</span>`
+      : `<span class="sw art" style='background-image:${artUrl(a.key)}'></span>`;
+    btn.innerHTML = `${sw}<span>${names[a.key]}</span>`;
+    artSwatchesEl.appendChild(btn);
+  });
+}
+artSwatchesEl.addEventListener('click', e=>{
+  const btn = e.target.closest('.bg-opt');
+  if (!btn) return;
+  artKey = btn.dataset.art;
+  try { localStorage.setItem(ART_KEY, artKey); } catch(err){}
+  applyArt();
+  renderArtSwatches();
+});
+applyArt();
+
 // ----- Тілді қолдану -----
 function applyStaticText(){
   document.title = t('pageTitle');
@@ -1304,6 +1639,14 @@ function applyStaticText(){
   settingsToggle.textContent = '⚙ ' + t('settingsLabel');
   settingsTitleEl.textContent = t('settingsLabel');
   locSectionTitle.textContent = t('locSectionTitle');
+  renderBgSwatches();
+  renderArtSwatches();
+  document.getElementById('aboutSectionTitle').textContent = t('aboutSectionTitle');
+  document.getElementById('aboutVersionK').textContent = t('aboutVersion');
+  document.getElementById('aboutEngK').textContent = t('aboutEng');
+  document.getElementById('aboutModelK').textContent = t('aboutModel');
+  document.getElementById('aboutMadeK').textContent = t('aboutMade');
+  document.getElementById('aboutFoot').textContent = t('aboutFoot');
   settingsClose.setAttribute('aria-label', t('closeLabel'));
   cityFieldLabel.textContent = t('cityFieldLabel');
   methodFieldLabel.textContent = t('methodFieldLabel');
